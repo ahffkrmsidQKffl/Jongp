@@ -1,0 +1,166 @@
+/* 전체 팝업 오버레이 */
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/* 팝업 카드 */
+.popup-card {
+  position: relative;
+  background: #fff;
+  padding: 20px 16px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  animation: popup-fade-in 0.3s ease;
+  font-family: 'Pretendard', sans-serif;
+}
+
+/* 제목 */
+.popup-card h2 {
+  font-size: 18px;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+/* 주소 */
+.popup-address {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+/* 정보 블록 */
+.popup-info p {
+  font-size: 14px;
+  margin: 3px 0;
+  color: #444;
+  word-break: keep-all;
+}
+
+/* 버튼 묶음 */
+.popup-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+  gap: 8px;
+}
+
+/* 공통 버튼 스타일 */
+.popup-btn {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  color: white;
+}
+
+.popup-btn.cancel {
+  background-color: #ccc;
+}
+
+.popup-btn.direction {
+  background-color: #f65a5a;
+}
+
+.popup-btn.direction:hover {
+  background-color: #da4343;
+}
+
+/* 북마크 버튼 */
+.bookmark-toggle {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 20px;
+  background: none;
+  border: none;
+  color: #f65a5a;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.bookmark-toggle:hover {
+  transform: scale(1.2);
+}
+
+/* 별점 영역 */
+.rating-section {
+  margin-top: 14px;
+  text-align: center;
+}
+
+.rating-section p {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+/* 별 아이콘 줄 정렬 */
+.rating-stars {
+  display: flex;
+  justify-content: center;
+  gap: 6px; /* 별 간격 축소 */
+  margin-bottom: 10px;
+}
+
+.rating-stars .star {
+  font-size: 20px; /* 작게 조정 */
+  color: #ccc;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.rating-stars .star:hover {
+  transform: scale(1.1);
+}
+
+.rating-stars .star.selected {
+  color: #f65a5a;
+}
+
+/* 등록 버튼 */
+.rating-submit {
+  padding: 8px 16px;
+  background-color: #f65a5a;
+  color: white;
+  font-weight: bold;
+  font-size: 13px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.rating-submit:hover:not(:disabled) {
+  background-color: #da4343;
+}
+
+.rating-submit:disabled {
+  background-color: #ddd;
+  cursor: not-allowed;
+}
+
+/* 팝업 진입 애니메이션 */
+@keyframes popup-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

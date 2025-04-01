@@ -1,0 +1,109 @@
+.signup-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  height: calc(var(--vh, 1vh) * 100);
+  width: 100vw;
+
+  background: linear-gradient(to bottom, rgb(83, 27, 27), #01172f);
+  color: white;
+}
+
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 340px;
+  background-color: #fff;
+  color: black;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  border-radius: 20px;
+}
+
+.signup-form label {
+  margin-bottom: 10px;
+  color: #3a1919;
+}
+
+.signup-form input,
+.signup-form select {
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #f5f5f5;
+  color: #3a1919;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  font-size: 16px;
+}
+
+.signup-form input:focus {
+  background-color: white;
+  border: 1px solid red;
+}
+
+.signup-form button {
+  padding: 10px;
+  background-color: rgb(255, 100, 100);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.signup-form button:active {
+  background-color: rgb(188, 46, 46);
+  transform: scale(0.95);
+}
+
+/* 라디오 버튼 그룹 스타일 */
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 10px;
+  justify-content: center; /* 중앙 정렬 */
+}
+
+.radio-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #3a1919;
+  white-space: nowrap;
+  flex: 1 1 45%; /* ✅ 반응형 너비 조절: 한 줄에 2개 */
+  max-width: 150px; /* 최대 너비 제한 */
+  justify-content: flex-start;
+  padding: 4px;
+}
+
+.radio-group input[type="radio"] {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  background-color: white;
+  position: relative;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+}
+
+/* 체크되었을 때 중앙에 붉은색 원 */
+.radio-group input[type="radio"]:checked::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;  /* ✅ 바깥 원 대비 약 90% */
+  height: 14px;
+  transform: translate(-50%, -50%);  /* ✅ 정확히 중앙 정렬 */
+  border-radius: 50%;
+  background-color: crimson;
+}

@@ -1,0 +1,95 @@
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  
+  height: calc(var(--vh, 1vh) * 100);
+  width: 100vw;
+  
+  background: linear-gradient(to bottom, rgb(83, 27, 27), #01172f);
+  color: white;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 300px;
+  background-color: #fff;
+  color: black;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  border-radius: 20px;
+}
+
+.login-form label {
+  display: inline-flex; /* 체크박스와 텍스트가 한 줄로 배치 */
+  align-items: center;  /* 수직 정렬 */
+  margin-bottom: 10px;
+  color: #3a1919;
+}
+/* 수정된 부분: label에 inline-flex 추가 */
+.login-form label {
+  display: inline-flex;  /* 체크박스와 텍스트가 한 줄로 배치 */
+  align-items: center;   /* 체크박스와 텍스트를 수직 정렬 */
+  margin-bottom: 10px;
+  color: #3a1919;
+}
+
+/* 체크박스 크기 조정 */
+.login-form input[type="checkbox"] {
+  width: 16px;  /* 체크박스 크기 */
+  height: 16px; /* 체크박스 크기 */
+  margin-right: 10px;  /* 체크박스와 텍스트 간격 */
+}
+
+.login-form input {
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #f5f5f5;
+  color: #3a1919;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  font-size: 16px;
+}
+
+.login-form input[type="checkbox"] {
+  accent-color: rgb(255, 100, 100); /* 체크박스 색상 강조 */
+}
+
+.login-form input:focus {
+  background-color: white;
+  border: 1px solid red;
+}
+
+.login-form button {
+  padding: 10px;
+  background-color: rgb(255, 100, 100);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.login-form button:active {
+  background-color: rgb(188, 46, 46);
+  transform: scale(0.95);
+}
+
+.signup-link {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.signup-link a {
+  color: rgb(255, 100, 100);
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.signup-link a:active {
+  color: darkred;
+}

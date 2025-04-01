@@ -1,0 +1,75 @@
+.mypage-container {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.mypage-container h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+form div {
+  margin-bottom: 10px;
+}
+
+form label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+form input,
+form select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+form button {
+  width: 100%;
+  padding: 10px;
+  background-color: #ff4b4b;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+form button:hover {
+  background-color: #ff1f1f;
+}
+/* 비밀번호 변경 버튼 스타일 */
+.mypage-container button {
+  width: 100%;
+  padding: 10px;
+  background-color: #ff4b4b;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 10px; /* 버튼 간 간격 */
+}
+
+.mypage-container button:hover {
+  background-color: #ff1f1f;
+}
+
+form select {
+  -webkit-appearance: none; /* iOS */
+  -moz-appearance: none; /* Firefox */
+  appearance: none; /* 일반 브라우저 */
+  background-color: #fff;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23333' d='M2 0L0 2h4L2 0zM2 5L0 3h4L2 5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  padding: 8px 30px 8px 8px; /* 오른쪽에 아이콘 여백 추가 */
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  color: #333;
+  width: 100%;
+  box-sizing: border-box;
+}

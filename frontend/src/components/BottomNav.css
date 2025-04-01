@@ -1,0 +1,30 @@
+.nav-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 6vh;
+  background-color: #fff;
+  padding: 1px 0px;
+  box-shadow: 0 0px 10px rgba(0, 0, 0, 0.2);
+}
+
+.nav-link {
+  float: left;
+  width: 20%;
+  text-align: center;
+  height: 50px;
+  line-height: 50px;
+}
+
+.nav-item {
+  color: rgba(128, 128, 128, 0.623); /* 기본 회색 */
+}
+
+.active-nav-item {
+  color: black; /* 활성화된 아이템은 검은색 */
+}
+
+.inactive-nav-item {
+  color: rgba(128, 128, 128, 0.623); /* 비활성화된 홈 아이템은 회색 */
+}

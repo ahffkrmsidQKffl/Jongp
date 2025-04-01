@@ -1,0 +1,114 @@
+/* 홈 페이지 */
+.home-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  /* 지도 영역 */
+  #map {
+    flex: 1; /* 남은 공간을 모두 사용하도록 설정 */
+    width: 100%;
+    height: calc(100vh - 6vh); /* 네비게이션 바 높이를 제외한 지도 높이 */
+  }
+  
+  /* 위치 오류 메시지 띄우기 */
+  .error-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7); /* 배경 어둡게 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* 오류 메시지가 다른 요소들 위에 보이게 */
+    opacity: 0;
+    animation: fadeIn 1s forwards; /* 부드럽게 나타나는 애니메이션 */
+  }
+  
+  /* 오류 메시지 스타일 */
+  .error-message {
+    color: white;
+    font-size: 18px;
+    text-align: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    max-width: 80%;
+  }
+  
+  /* 배경 어두운 효과를 부드럽게 나타나게 하는 애니메이션 */
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  
+  /* 네비게이션 바 */
+  .nav-wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 6vh; /* 높이 설정 */
+    background-color: #fff;
+    padding: 10px 0px;
+    box-shadow: 0px 10px 11px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 999; /* 네비게이션 바가 다른 모든 요소 위에 표시되게 설정 */
+  }
+  /* 위치 오류 메시지 띄우기 */
+.location-message {
+  position: fixed;
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  z-index: 1000;
+}
+
+/* 로딩 오버레이 */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #333;
+}
+
+/* 로딩 스피너 */
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #ccc;
+  border-top-color: #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
