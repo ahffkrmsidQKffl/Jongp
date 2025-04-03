@@ -1,0 +1,38 @@
+.star-display {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    height: 24px;
+  }
+  
+  .star-wrapper {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    overflow: hidden;
+  }
+  
+  .star-background,
+  .star-fill {
+    font-size: 24px;
+    line-height: 24px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    text-align: left;
+  }
+  
+  .star-background {
+    color: #ccc;
+    z-index: 0;
+    width: 100%;
+  }
+  
+  .star-fill {
+    color: gold;
+    z-index: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    height: 100%;
+  }
+  

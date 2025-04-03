@@ -1,4 +1,3 @@
-// BookmarkList.jsx (리팩토링 버전)
 import { useEffect, useState, useContext } from "react";
 import { apiRequest } from "../api/api";
 import { UserContext } from "../context/UserContext";
@@ -52,6 +51,7 @@ const BookmarkList = () => {
     try {
       await apiRequest(`/api/bookmarks/${p_id}`, "DELETE");
       setBookmarks((prev) => prev.filter((lot) => lot.p_id !== p_id));
+      toast.success("북마크가 삭제되었습니다.");
     } catch {
       toast.error("삭제 실패");
     }
@@ -61,6 +61,7 @@ const BookmarkList = () => {
     try {
       await apiRequest("/api/bookmarks", "POST", { p_id: lot.p_id });
       setBookmarks((prev) => [...prev, { p_id: lot.p_id }]);
+      toast.success("북마크가 추가되었습니다.");
     } catch {
       toast.error("추가 실패");
     }
@@ -104,14 +105,12 @@ const BookmarkList = () => {
             </button>
           )}
         </div>
-        <p>{lot.address}</p>
-        <p>요금: {lot.fee.toLocaleString()}원</p>
-        <p>평점: {lot.avg_rating}</p>
-        <p>혼잡도: {lot.real_time_congestion}</p>
-        <p>
-          AI 추천 점수 ({user.preferred_factor} 기준):{" "}
-          <span style={{ color: scoreColor }}>{score}</span>
-        </p>
+        <p className="lot-address">{lot.address}</p>
+        <div className="lot-info-group">
+          <span>요금: {lot.fee.toLocaleString()}원</span>
+          <span>혼잡도: {lot.real_time_congestion}</span>
+          <span>평점: {lot.avg_rating?.toFixed(1) || "0.0"}</span>
+        </div>
       </li>
     );
   };

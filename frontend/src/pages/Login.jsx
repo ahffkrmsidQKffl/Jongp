@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./Login.css";
 
-export default function Login() {
+export default function Login({ onLoginRedirect }) {
   const { setUser } = useContext(UserContext);
   const navigate = useNavigate();
 
@@ -44,12 +44,14 @@ export default function Login() {
       }
 
       toast.success("로그인 성공!");
-      navigate("/home");
+      onLoginRedirect("/home"); // 경로 이동을 `handleLoginRedirect`로 처리
     } catch (error) {
       console.error("Login error:", error.message);
       toast.error(error.message || "로그인 실패");
     }
   };
+
+  console.log("Login 컴포넌트 렌더링 됨");
 
   return (
     <div className="login-container">

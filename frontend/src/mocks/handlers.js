@@ -132,16 +132,41 @@ export const handlers = [
   }),
 
   // 평점 수정
-  http.patch('/api/ratings', async ({ request }) => {
-    if (!currentUserEmail) return HttpResponse.json({ message: '로그인 필요' }, { status: 401 });
-    const { rating_id, score } = await request.json();
-    const rating = ratings.find(r => r.rating_id === rating_id && r.email === currentUserEmail);
-    if (!rating) {
-      return HttpResponse.json({ message: '해당 평점을 찾을 수 없습니다.' }, { status: 404 });
-    }
-    rating.score = score;
-    return HttpResponse.json({ message: '평점 수정 완료', rating });
-  }),
+http.patch('/api/ratings', async ({ request }) => {
+  if (!currentUserEmail) return HttpResponse.json({ message: '로그인 필요' }, { status: 401 });
+
+  const { rating_id, score } = await request.json();
+
+  const target = ratings.find(r => r.rating_id === rating_id && r.email === currentUserEmail);
+  if (!target) {
+    return HttpResponse.json({ message: '해당 평점을 찾을 수 없습니다.' }, { status: 404 });
+  }
+
+  target.score = score;
+  return HttpResponse.json({ message: '평점 수정 완료', rating: target });
+}),
+
+
+  //평점 삭제
+http.delete('/api/ratings', async ({ request }) => {
+  if (!currentUserEmail) {
+    return HttpResponse.json({ message: '로그인이 필요합니다.' }, { status: 401 });
+  }
+
+  const { rating_id } = await request.json();
+
+  const index = ratings.findIndex(
+    (r) => r.rating_id === rating_id && r.email === currentUserEmail
+  );
+
+  if (index === -1) {
+    return HttpResponse.json({ message: '해당 평점을 찾을 수 없습니다.' }, { status: 404 });
+  }
+
+  ratings.splice(index, 1);
+  return HttpResponse.json({ status: 200, message: '평점 삭제 성공', data: null });
+}),
+
 
   // 목적지 기반 추천 (POST)
   http.post('/api/parking-lots/recommendations/destination', async ({ request }) => {
@@ -176,8 +201,8 @@ export const handlers = [
     const { lat, lng } = await request.json();
     const filtered = parkingData.filter(
       lot =>
-        Math.abs(lot.latitude - lat) < 0.1 &&
-        Math.abs(lot.longitude - lng) < 0.1
+        Math.abs(lot.latitude - lat) < 0.11 &&
+        Math.abs(lot.longitude - lng) < 0.11
     );
     return HttpResponse.json(filtered, { status: 200 });
   }),

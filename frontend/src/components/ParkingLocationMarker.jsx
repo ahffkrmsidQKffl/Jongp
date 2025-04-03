@@ -1,4 +1,3 @@
-// src/components/ParkingLocationMarker.jsx
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../context/UserContext";
 import ParkingPopup from "./ParkingPopup";
@@ -11,7 +10,6 @@ const ParkingLocationMarker = ({ map }) => {
 
   const getColorByScore = (score) => {
     let red, green, blue = 0;
-
     if (score <= 50) {
       red = 255;
       green = Math.round(score * 5.1);
@@ -19,7 +17,6 @@ const ParkingLocationMarker = ({ map }) => {
       red = Math.round((100 - score) * 5.1);
       green = 255;
     }
-
     return `rgb(${red}, ${green}, ${blue})`;
   };
 
@@ -43,15 +40,31 @@ const ParkingLocationMarker = ({ map }) => {
       const score = parking[key] || 0;
       const color = getColorByScore(score);
 
+      const svg = `
+        <svg width="30" height="30" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="markerShadow" x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="black" flood-opacity="0.3"/>
+            </filter>
+          </defs>
+          <circle cx="15" cy="15" r="13" fill="${color}" stroke="black" stroke-width="0.5" filter="url(#markerShadow)" />
+          <text x="15" y="20"
+                font-size="16"
+                font-weight="bold"
+                text-anchor="middle"
+                fill="#fff"
+                stroke="black"
+                stroke-width="0.5"
+                font-family="Arial">
+            P
+          </text>
+        </svg>
+      `;
+
       const markerImage = new window.kakao.maps.MarkerImage(
-        "data:image/svg+xml;charset=UTF-8," +
-          encodeURIComponent(`
-            <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="10" cy="10" r="10" fill="${color}" />
-            </svg>
-          `),
-        new window.kakao.maps.Size(20, 20),
-        { offset: new window.kakao.maps.Point(10, 10) }
+        "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg),
+        new window.kakao.maps.Size(30, 30),
+        { offset: new window.kakao.maps.Point(15, 15) }
       );
 
       const marker = new window.kakao.maps.Marker({

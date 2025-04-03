@@ -1,75 +1,134 @@
+/* MyPage.css */
+
 .mypage-container {
-  padding: 20px;
+  padding: 24px 16px;
   max-width: 600px;
   margin: 0 auto;
+  font-family: "Arial", sans-serif;
+  background-color: #f9f9f9;
+  min-height: calc(100vh - 60px); /* 네비게이션 높이 고려 */
+  box-sizing: border-box;
 }
 
-.mypage-container h1 {
+.mypage-title {
+  font-size: 22px;
+  font-weight: bold;
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  color: #222;
 }
 
-form div {
-  margin-bottom: 10px;
+.mypage-form {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
-form label {
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
   display: block;
-  margin-bottom: 5px;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #333;
 }
 
-form input,
-form select {
+.form-group input {
   width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
-  border-radius: 5px;
+  padding: 10px 12px;
+  font-size: 16px;
   border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+  background-color: #fff;
+  transition: border-color 0.2s;
 }
 
-form button {
-  width: 100%;
-  padding: 10px;
-  background-color: #ff4b4b;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+.form-group input:disabled {
+  background-color: #f5f5f5;
+  color: #999;
 }
 
-form button:hover {
-  background-color: #ff1f1f;
-}
-/* 비밀번호 변경 버튼 스타일 */
-.mypage-container button {
-  width: 100%;
-  padding: 10px;
-  background-color: #ff4b4b;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-bottom: 10px; /* 버튼 간 간격 */
-}
-
-.mypage-container button:hover {
-  background-color: #ff1f1f;
-}
-
+/* 기존 select 박스 스타일 */
 form select {
   -webkit-appearance: none; /* iOS */
-  -moz-appearance: none; /* Firefox */
-  appearance: none; /* 일반 브라우저 */
+  -moz-appearance: none;    /* Firefox */
+  appearance: none;         /* 일반 브라우저 */
   background-color: #fff;
   background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23333' d='M2 0L0 2h4L2 0zM2 5L0 3h4L2 5z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
   background-size: 12px;
-  padding: 8px 30px 8px 8px; /* 오른쪽에 아이콘 여백 추가 */
-  border-radius: 5px;
+  padding: 10px 32px 10px 12px; /* 오른쪽 아이콘 여백 추가 */
+  border-radius: 8px;
   border: 1px solid #ccc;
-  font-size: 16px;
+  font-size: 15px;
   color: #333;
   width: 100%;
   box-sizing: border-box;
+}
+
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+  background-color: #fff;
+}
+
+.section {
+  margin: 24px 0;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 12px;
+}
+
+/* 버튼 스타일 */
+.mypage-button {
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  border: none;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.mypage-button.main {
+  background-color: #007bff;
+  color: white;
+}
+
+.mypage-button.main:hover {
+  background-color: #0056b3;
+}
+
+.mypage-button.toggle {
+  background-color: #f1f1f1;
+  color: #333;
+}
+
+.mypage-button.toggle:hover {
+  background-color: #e0e0e0;
+}
+
+.password-section {
+  margin-top: 16px;
+}
+
+.mypage-button.activity {
+  background-color: #f1f1f1;
+  color: #333;
+}
+
+.mypage-button.activity:hover {
+  background-color: #e0e0e0;
 }

@@ -25,6 +25,7 @@ const Header = () => {
   const handleLogout = () => {
     document.cookie = "email=; max-age=0; path=/";
     sessionStorage.removeItem("email");
+    sessionStorage.clear();
     toast.info("로그아웃 되었습니다.");
     navigate("/login");
   };

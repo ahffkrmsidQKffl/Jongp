@@ -22,36 +22,110 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   animation: popup-fade-in 0.3s ease;
   font-family: 'Pretendard', sans-serif;
+  overflow: hidden;
+}
+
+/* 상단 아이콘 (좌: 뱃지 / 우: 북마크) */
+.popup-top-icons {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+}
+
+/* AI 추천 점수 뱃지 */
+.score-badge {
+  width: 48px;
+  height: 48px;
+  font-weight: bold;
+  font-size: 16px;
+  color: white;
+  border-radius: 50%;
+  background-color: #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
+}
+
+/* 북마크 버튼 */
+.bookmark-toggle {
+  font-size: 20px;
+  background: none;
+  border: none;
+  color: #f65a5a;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.bookmark-toggle:hover {
+  transform: scale(1.2);
 }
 
 /* 제목 */
-.popup-card h2 {
+.popup-title {
+  margin-top: 60px;
   font-size: 18px;
-  margin-bottom: 6px;
+  font-weight: bold;
   color: #333;
+  text-align: center;
 }
 
 /* 주소 */
 .popup-address {
   font-size: 13px;
   color: #666;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  text-align: center;
 }
 
-/* 정보 블록 */
+/* 정보 텍스트 */
 .popup-info p {
   font-size: 14px;
-  margin: 3px 0;
+  margin: 4px 0;
   color: #444;
   word-break: keep-all;
 }
 
-/* 버튼 묶음 */
+/* 평점 영역 박스 */
+.rating-box {
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 14px;
+}
+
+.rating-display-block {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.rating-display-block p {
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: #888;
+  font-weight: 500;
+}
+
+.rating-editable {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* 버튼 영역 */
 .popup-buttons {
   display: flex;
   justify-content: space-between;
-  margin-top: 16px;
-  gap: 8px;
+  margin-top: 18px;
+  gap: 10px;
 }
 
 /* 공통 버튼 스타일 */
@@ -76,81 +150,6 @@
 
 .popup-btn.direction:hover {
   background-color: #da4343;
-}
-
-/* 북마크 버튼 */
-.bookmark-toggle {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  font-size: 20px;
-  background: none;
-  border: none;
-  color: #f65a5a;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.bookmark-toggle:hover {
-  transform: scale(1.2);
-}
-
-/* 별점 영역 */
-.rating-section {
-  margin-top: 14px;
-  text-align: center;
-}
-
-.rating-section p {
-  font-size: 14px;
-  margin-bottom: 6px;
-}
-
-/* 별 아이콘 줄 정렬 */
-.rating-stars {
-  display: flex;
-  justify-content: center;
-  gap: 6px; /* 별 간격 축소 */
-  margin-bottom: 10px;
-}
-
-.rating-stars .star {
-  font-size: 20px; /* 작게 조정 */
-  color: #ccc;
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: color 0.2s, transform 0.2s;
-}
-
-.rating-stars .star:hover {
-  transform: scale(1.1);
-}
-
-.rating-stars .star.selected {
-  color: #f65a5a;
-}
-
-/* 등록 버튼 */
-.rating-submit {
-  padding: 8px 16px;
-  background-color: #f65a5a;
-  color: white;
-  font-weight: bold;
-  font-size: 13px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.rating-submit:hover:not(:disabled) {
-  background-color: #da4343;
-}
-
-.rating-submit:disabled {
-  background-color: #ddd;
-  cursor: not-allowed;
 }
 
 /* 팝업 진입 애니메이션 */

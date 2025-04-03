@@ -40,10 +40,10 @@
 /* 북마크 카드 스타일 */
 .bookmark-card {
   background: #fff;
-  padding: 16px;
+  padding: 16px 18px;
   border-radius: 12px;
   margin-bottom: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: all 0.2s ease-in-out;
 }
 
@@ -51,7 +51,6 @@
   transform: scale(1.01);
 }
 
-/* 카드 상단 영역 (제목 + 아이콘) */
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -60,10 +59,25 @@
 }
 
 .card-header h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
   color: #222;
+  font-weight: 600;
+  margin: 0;
+}
+
+.lot-address {
+  font-size: 13px;
+  color: #666;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.lot-info-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 13px;
+  color: #444;
 }
 
 /* 삭제 버튼 / 추가 버튼 */

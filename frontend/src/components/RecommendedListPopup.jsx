@@ -1,3 +1,5 @@
+import { useContext } from "react";
+import { UserContext } from "../context/UserContext";
 import "./RecommendedListPopup.css";
 
 const getColorByScore = (score) => {
@@ -12,10 +14,21 @@ const getColorByScore = (score) => {
   return `rgb(${red}, ${green}, ${blue})`;
 };
 
-const RecommendedListPopup = ({ lots, onSelect, onClose, title, baseLocation }) => {
+const RecommendedListPopup = ({
+  lots,
+  onSelect,
+  onClose,
+  title,
+  baseLocation,
+  userAddress,
+  isInitial,
+}) => {
+  const { user } = useContext(UserContext);
+  const preferredFactor = user?.preferred_factor?.toLowerCase() || "distance";
+
   const getDistance = (lat1, lng1, lat2, lng2) => {
     const R = 6371e3;
-    const toRad = deg => deg * Math.PI / 180;
+    const toRad = (deg) => (deg * Math.PI) / 180;
     const dLat = toRad(lat2 - lat1);
     const dLng = toRad(lng2 - lng1);
     const x = dLng * Math.cos(toRad((lat1 + lat2) / 2));
@@ -25,31 +38,59 @@ const RecommendedListPopup = ({ lots, onSelect, onClose, title, baseLocation }) 
   };
 
   const sortedLots = [...lots]
-    .map(lot => {
-      const factor = "ai_recommend_score_" + (lot.preferred_factor?.toLowerCase() || "distance");
+    .map((lot) => {
+      const factor = `ai_recommend_score_${preferredFactor}`;
       const score = lot[factor] || 0;
       const distance = baseLocation
-        ? getDistance(baseLocation.lat, baseLocation.lng, lot.latitude, lot.longitude)
+        ? getDistance(
+            baseLocation.lat,
+            baseLocation.lng,
+            lot.latitude,
+            lot.longitude
+          )
         : null;
       return { ...lot, score, distance };
     })
     .sort((a, b) => b.score - a.score);
 
+  const limitCount = title === "현재 위치 기반 추천" && isInitial ? 1 : 3;
+  const limitedLots = sortedLots.slice(0, limitCount);
+
   return (
     <div className="recommend-popup-overlay">
       <div className="recommend-popup-card">
         <h3 className="recommend-title">{title}</h3>
-        <button className="recommend-close-btn" onClick={onClose}>×</button>
+        {userAddress && (
+          <p className="recommend-address">
+            현재 위치는 <strong>{userAddress}</strong> 입니다.
+          </p>
+        )}
+        <button className="recommend-close-btn" onClick={onClose}>
+          ×
+        </button>
         <ul className="recommend-list">
-          {sortedLots.map((lot) => {
+          {limitedLots.map((lot) => {
             const scoreColor = getColorByScore(lot.score);
             return (
-              <li key={lot.p_id} className="recommend-card" onClick={() => onSelect(lot)}>
-                <h4>{lot.name}</h4>
+              <li
+                key={lot.p_id}
+                className="recommend-card"
+                onClick={() => onSelect(lot)}
+              >
+                <div className="recommend-card-header">
+                  <h4>{lot.name}</h4>
+                  <div
+                    className="recommend-score-badge large"
+                    style={{ backgroundColor: scoreColor }}
+                  >
+                    {lot.score}
+                  </div>
+                </div>
                 <p>{lot.address}</p>
                 <p>요금: {lot.fee.toLocaleString()}원</p>
-                <p>AI 추천 점수: <span style={{ color: scoreColor }}>{lot.score}</span></p>
-                {lot.distance != null && <p>거리: {lot.distance.toLocaleString()}m</p>}
+                {lot.distance != null && (
+                  <p>거리: {lot.distance.toLocaleString()}m</p>
+                )}
               </li>
             );
           })}

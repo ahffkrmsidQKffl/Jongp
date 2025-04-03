@@ -1,0 +1,71 @@
+.address-search-bar {
+    position: fixed;
+    top: 56px; /* 헤더 아래 위치 */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92%;
+    max-width: 480px;
+    z-index: 900;
+    padding: 0 8px;
+  }
+  
+  .search-bar-top {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 8px 12px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .search-bar-top input {
+    flex: 1;
+    font-size: 16px;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+  }
+  
+  .search-bar-top button {
+    margin-left: 8px;
+    padding: 10px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .search-bar-top button:hover {
+    background-color: #0056b3;
+  }
+  
+  .search-result-list {
+    background: white;
+    margin-top: 6px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    max-height: 260px;
+    overflow-y: auto;
+  }
+  
+  .search-result-list li {
+    padding: 10px 14px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  
+  .search-result-list li:hover {
+    background-color: #f8f8f8;
+  }
+  
+  .search-result-list p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: #666;
+  }
+  

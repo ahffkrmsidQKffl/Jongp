@@ -1,6 +1,5 @@
-import { useEffect } from "react";
-import { Routes, Route, Outlet, useLocation } from "react-router-dom";
-import { Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Routes, Route, Outlet, Navigate, useNavigate } from "react-router-dom";
 import Header from "./components/Header";
 import BottomNav from "./components/BottomNav";
 import Login from "./pages/Login";
@@ -8,51 +7,95 @@ import Home from "./pages/Home";
 import Signup from "./pages/Signup";
 import MyPage from "./pages/MyPage";
 import BookmarkList from "./pages/BookmarkList";
-import eruda from "eruda";  // Eruda import
+import Ratings from "./pages/Ratings";
 
-const Layout = () => {
-  const location = useLocation();
-  const path = location.pathname;
-  const showHeader = ["/", "/login", "/signup", "/home", "/mypage", "/bookmarks"].includes(path);
+const Layout = ({ setShowAddressModal, triggerNearbyRecommend, currentPath }) => {
+  const showHeader = ["/", "/login", "/signup", "/home", "/mypage", "/bookmarks"].some((p) =>
+    currentPath.startsWith(p)
+  );
+  const showBottomNav = ["/home", "/mypage", "/bookmarks", "/ratings"].some((p) =>
+    currentPath.startsWith(p)
+  );
 
   return (
     <>
       {showHeader && <Header />}
       <Outlet />
+      {showBottomNav && (
+        <BottomNav
+          currentPath={currentPath}
+          onOpenAddressModal={() => setShowAddressModal(true)}
+          onOpenNearbyRecommend={triggerNearbyRecommend}
+        />
+      )}
     </>
   );
 };
 
-
 function App() {
-  useEffect(() => {
-    // Eruda 초기화 (모바일에서 디버깅 도구를 사용할 수 있게 함)
-    //eruda.init();  // Eruda 초기화
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [triggerNearby, setTriggerNearby] = useState(false);
+  const [currentPath, setCurrentPath] = useState(window.location.hash.replace("#", "") || "/");
+  const navigate = useNavigate();
 
+  const triggerNearbyRecommend = () => {
+    setTriggerNearby(true);
+  };
+
+  useEffect(() => {
     const setViewportHeight = () => {
       const vh = window.innerHeight * 0.01;
       document.documentElement.style.setProperty("--vh", `${vh}px`);
     };
-    
     setViewportHeight();
     window.addEventListener("resize", setViewportHeight);
-
-    // 컴포넌트 언마운트 시 이벤트 리스너 제거
     return () => window.removeEventListener("resize", setViewportHeight);
   }, []);
 
+  // 🚀 경로 변경 후 강제로 다시 상태 업데이트하여 렌더링 보장
+  useEffect(() => {
+    const onHashChange = () => {
+      setCurrentPath(window.location.hash.replace("#", "") || "/");
+    };
+
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+
+  // 로그인 후 페이지 경로 업데이트
+  const handleLoginRedirect = (targetPath) => {
+    navigate(targetPath);
+    setCurrentPath(targetPath); // 상태를 바로 업데이트하여 하단 네비게이션을 보이게 함
+  };
+
   return (
-  <Routes>
-    <Route element={<Layout />}>
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/home" element={<Home />} />
-      <Route path="/mypage" element={<MyPage />} />
-      <Route path="/bookmarks" element={<BookmarkList />} />
-    </Route>
-  </Routes>
-  );  
+    <Routes>
+      <Route
+        element={
+          <Layout
+            setShowAddressModal={setShowAddressModal}
+            triggerNearbyRecommend={triggerNearbyRecommend}
+            currentPath={currentPath}
+          />
+        }
+      >
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<Login onLoginRedirect={handleLoginRedirect} />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/home" element={
+          <Home
+            showAddressModal={showAddressModal}
+            setShowAddressModal={setShowAddressModal}
+            triggerNearby={triggerNearby}
+            clearTriggerNearby={() => setTriggerNearby(false)}
+          />
+        } />
+        <Route path="/mypage" element={<MyPage />} />
+        <Route path="/bookmarks" element={<BookmarkList />} />
+        <Route path="/ratings" element={<Ratings />} />
+      </Route>
+    </Routes>
+  );
 }
 
 export default App;

@@ -73,13 +73,13 @@ const MyPage = () => {
 
   return (
     <div className="mypage-container">
-      <h1>마이페이지</h1>
-      <form onSubmit={(e) => e.preventDefault()}>
-        <div>
+      <h1 className="mypage-title">마이페이지</h1>
+      <form className="mypage-form" onSubmit={(e) => e.preventDefault()}>
+        <div className="form-group">
           <label>이메일</label>
           <input type="text" value={user?.email || ""} disabled />
         </div>
-        <div>
+        <div className="form-group">
           <label>닉네임</label>
           <input
             type="text"
@@ -87,7 +87,7 @@ const MyPage = () => {
             onChange={(e) => setNickname(e.target.value)}
           />
         </div>
-        <div>
+        <div className="form-group">
           <label>선호 요소</label>
           <select value={preferred} onChange={(e) => setPreferred(e.target.value)}>
             <option value="FEE">요금</option>
@@ -96,18 +96,38 @@ const MyPage = () => {
             <option value="CONGESTION">혼잡도</option>
           </select>
         </div>
-        <button type="button" onClick={handleProfileUpdate}>정보 수정</button>
+
+        <div className="section">
+          <h3 className="section-title">내 활동</h3>
+          <button
+            type="button"
+            className="mypage-button activity"
+            onClick={() => navigate("/ratings")}
+          >
+            내가 준 평점 관리
+          </button>
+        </div>
+
 
         <button
           type="button"
+          className="mypage-button main"
+          onClick={handleProfileUpdate}
+        >
+          정보 수정
+        </button>
+
+        <button
+          type="button"
+          className="mypage-button toggle"
           onClick={() => setIsPasswordChangeVisible(!isPasswordChangeVisible)}
         >
           {isPasswordChangeVisible ? "비밀번호 변경 취소" : "비밀번호 변경하기"}
         </button>
 
         {isPasswordChangeVisible && (
-          <>
-            <div>
+          <div className="password-section">
+            <div className="form-group">
               <label>현재 비밀번호</label>
               <input
                 type="password"
@@ -115,7 +135,7 @@ const MyPage = () => {
                 onChange={(e) => setCurrentPassword(e.target.value)}
               />
             </div>
-            <div>
+            <div className="form-group">
               <label>새 비밀번호</label>
               <input
                 type="password"
@@ -123,7 +143,7 @@ const MyPage = () => {
                 onChange={(e) => setNewPassword(e.target.value)}
               />
             </div>
-            <div>
+            <div className="form-group">
               <label>새 비밀번호 확인</label>
               <input
                 type="password"
@@ -131,8 +151,14 @@ const MyPage = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
             </div>
-            <button type="button" onClick={handlePasswordChange}>비밀번호 수정하기</button>
-          </>
+            <button
+              type="button"
+              className="mypage-button"
+              onClick={handlePasswordChange}
+            >
+              비밀번호 수정하기
+            </button>
+          </div>
         )}
       </form>
     </div>
