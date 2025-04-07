@@ -1,0 +1,56 @@
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.modal-footer {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-footer .modal-left {
+  flex: 1;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.modal-footer .modal-center {
+  display: flex;
+  justify-content: center;
+  flex: 2;
+  gap: 0.5rem;
+}
+
+.modal-footer .modal-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}

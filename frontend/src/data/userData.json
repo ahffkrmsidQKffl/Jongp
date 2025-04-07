@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "email": "hong@example.com",
+    "nickname": "홍길동",
+    "joined_at": "2024-01-15",
+    "preferred_factor": "FEE",
+    "password": "5678"
+  },
+  {
+    "id": 2,
+    "email": "kim@example.com",
+    "nickname": "김철수",
+    "joined_at": "2024-02-20",
+    "preferred_factor": "DISTANCE",
+    "password": "5678"
+  },
+  {
+    "id": 3,
+    "email": "lee@example.com",
+    "nickname": "이영희",
+    "joined_at": "2024-03-05",
+    "preferred_factor": "CONGESTION",
+    "password": "5678"
+  }
+]

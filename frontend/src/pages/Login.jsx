@@ -1,3 +1,4 @@
+// Login.jsx
 import { useState, useContext, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
@@ -44,14 +45,18 @@ export default function Login({ onLoginRedirect }) {
       }
 
       toast.success("로그인 성공!");
-      onLoginRedirect("/home"); // 경로 이동을 `handleLoginRedirect`로 처리
+
+      // 관리자 전용 조건
+      if (email === "admin" && password === "admin") {
+        onLoginRedirect("/admin/users");
+      } else {
+        onLoginRedirect("/home");
+      }
     } catch (error) {
       console.error("Login error:", error.message);
       toast.error(error.message || "로그인 실패");
     }
   };
-
-  console.log("Login 컴포넌트 렌더링 됨");
 
   return (
     <div className="login-container">

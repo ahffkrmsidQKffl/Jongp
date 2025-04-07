@@ -1,0 +1,23 @@
+.admin-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.admin-header {
+  background-color: #222;
+  color: white;
+  padding: 1rem;
+}
+
+.admin-header nav a {
+  color: white;
+  margin-right: 1rem;
+  text-decoration: none;
+}
+
+.admin-main {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+}

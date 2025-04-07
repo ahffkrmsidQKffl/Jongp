@@ -8,6 +8,13 @@ const users = [
     password: "5678",
     nickname: "테스트",
     preferred_factor: "DISTANCE"
+  },
+  {
+    id: 2,
+    email: "admin",
+    password: "admin",
+    nickname: "관리자",
+    preferred_factor: "FEE"
   }
 ];
 

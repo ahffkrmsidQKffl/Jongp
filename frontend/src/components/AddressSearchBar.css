@@ -69,3 +69,22 @@
     color: #666;
   }
   
+  .no-result-message {
+    background: #fff;
+    margin-top: 8px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
+    color: #333;
+    text-align: center;
+    line-height: 1.5;
+  }
+  
+  .address-example {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #555;
+    text-align: left;
+  }
+  

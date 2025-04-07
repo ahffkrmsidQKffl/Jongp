@@ -1,3 +1,4 @@
+// App.jsx
 import { useEffect, useState } from "react";
 import { Routes, Route, Outlet, Navigate, useNavigate } from "react-router-dom";
 import Header from "./components/Header";
@@ -8,6 +9,10 @@ import Signup from "./pages/Signup";
 import MyPage from "./pages/MyPage";
 import BookmarkList from "./pages/BookmarkList";
 import Ratings from "./pages/Ratings";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminUserList from "./pages/admin/AdminUserList";
+import AdminParkingList from "./pages/admin/AdminParkingList";
+import AdminRatingList from "./pages/admin/AdminRatingList";
 
 const Layout = ({ setShowAddressModal, triggerNearbyRecommend, currentPath }) => {
   const showHeader = ["/", "/login", "/signup", "/home", "/mypage", "/bookmarks"].some((p) =>
@@ -52,20 +57,17 @@ function App() {
     return () => window.removeEventListener("resize", setViewportHeight);
   }, []);
 
-  // 🚀 경로 변경 후 강제로 다시 상태 업데이트하여 렌더링 보장
   useEffect(() => {
     const onHashChange = () => {
       setCurrentPath(window.location.hash.replace("#", "") || "/");
     };
-
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
-  // 로그인 후 페이지 경로 업데이트
   const handleLoginRedirect = (targetPath) => {
     navigate(targetPath);
-    setCurrentPath(targetPath); // 상태를 바로 업데이트하여 하단 네비게이션을 보이게 함
+    setCurrentPath(targetPath);
   };
 
   return (
@@ -82,17 +84,26 @@ function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login onLoginRedirect={handleLoginRedirect} />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/home" element={
-          <Home
-            showAddressModal={showAddressModal}
-            setShowAddressModal={setShowAddressModal}
-            triggerNearby={triggerNearby}
-            clearTriggerNearby={() => setTriggerNearby(false)}
-          />
-        } />
+        <Route
+          path="/home"
+          element={
+            <Home
+              showAddressModal={showAddressModal}
+              setShowAddressModal={setShowAddressModal}
+              triggerNearby={triggerNearby}
+              clearTriggerNearby={() => setTriggerNearby(false)}
+            />
+          }
+        />
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/bookmarks" element={<BookmarkList />} />
         <Route path="/ratings" element={<Ratings />} />
+      </Route>
+
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route path="users" element={<AdminUserList />} />
+        <Route path="parkings" element={<AdminParkingList />} />
+        <Route path="ratings" element={<AdminRatingList />} />
       </Route>
     </Routes>
   );
