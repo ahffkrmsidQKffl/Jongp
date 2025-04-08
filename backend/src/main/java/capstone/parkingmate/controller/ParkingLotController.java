@@ -1,15 +1,13 @@
 package capstone.parkingmate.controller;
 
+import capstone.parkingmate.dto.DetailResponseDTO;
 import capstone.parkingmate.dto.ResponseData;
 import capstone.parkingmate.dto.SearchResponseDTO;
 import capstone.parkingmate.service.ParkingLotService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -19,6 +17,15 @@ import java.util.List;
 public class ParkingLotController {
 
     private final ParkingLotService parkingLotService;
+
+    // 주차장 상세 정보 조회
+    @GetMapping("/{p_id}")
+    public ResponseEntity<ResponseData<DetailResponseDTO>> detail(@PathVariable("p_id") String p_id) {
+
+        DetailResponseDTO responseDTO = parkingLotService.detail(p_id);
+
+        return ResponseEntity.ok(ResponseData.res(HttpStatus.OK, "주차장 상세정보 조회 성공", responseDTO));
+    }
 
     
     // 주차장 검색
