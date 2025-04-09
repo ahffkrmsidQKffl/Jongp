@@ -2,6 +2,7 @@ package capstone.parkingmate.service;
 
 import capstone.parkingmate.dto.*;
 import capstone.parkingmate.entity.User;
+import capstone.parkingmate.enums.PreferredFactor;
 import capstone.parkingmate.exception.CustomException;
 import capstone.parkingmate.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,8 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import static capstone.parkingmate.entity.User.preferred_factor.*;
 
 @Slf4j
 @Service
@@ -40,7 +39,7 @@ public class UserService {
         user.setEmail(userDTO.getEmail());
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         user.setNickname(userDTO.getNickname());
-        user.setPreferred_factor(valueOf(userDTO.getPreferred_factor()));
+        user.setPreferred_factor(PreferredFactor.valueOf(userDTO.getPreferred_factor()));
 
         // 사용자 디비 저장
         userRepository.save(user);
@@ -88,7 +87,7 @@ public class UserService {
             // 404 NOTFOUND 에러 응답
             throw new CustomException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
         }
-        
+
         // 사용자 데이터 가져오기
         Long user_id = (Long) session.getAttribute("user_id");
         User user = userRepository.findById(user_id)
@@ -108,6 +107,7 @@ public class UserService {
 
         // 로깅
         log.info("200 : 정상 처리, 사용자 {} 비밀번호 재설정 성공", user.getEmail());
+
     }
 
     // 회원탈퇴
@@ -186,8 +186,8 @@ public class UserService {
 
         // 정보 수정
         user.setNickname(mypageRequestDTO.getNickname());
-        user.setPreferred_factor(valueOf(mypageRequestDTO.getPreferred_factor()));
-        
+        user.setPreferred_factor(PreferredFactor.valueOf(mypageRequestDTO.getPreferred_factor()));
+
         // 수정된 사용자 데이터 저장
         userRepository.save(user);
 

@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,7 +18,8 @@ public class UserController {
 
     // 회원가입
     @PostMapping("/register")
-    public ResponseEntity<ResponseData<?>> register(@RequestBody UserDTO userDTO) {
+    @Transactional
+    public ResponseEntity<ResponseData<?>> register(@RequestBody UserDTO userDTO) { // JSON 데이터로 받아올거면 매개변수 앞에 @RequestBody 추가
 
         userService.register(userDTO);
 
@@ -35,6 +37,7 @@ public class UserController {
 
     // 비밀번호 재설정
     @PatchMapping("/password")
+    @Transactional
     public ResponseEntity<ResponseData<?>> password(@RequestBody PasswordDTO passwordDTO, HttpServletRequest request) {
 
         userService.password(passwordDTO, request);
@@ -44,6 +47,7 @@ public class UserController {
 
     // 회원탈퇴
     @DeleteMapping()
+    @Transactional
     public ResponseEntity<?> delete(HttpServletRequest request) {
 
         userService.delete(request);
@@ -62,6 +66,7 @@ public class UserController {
 
     // 마이페이지 수정
     @PatchMapping("/mypage")
+    @Transactional
     public ResponseEntity<ResponseData<?>> mypage_update(@RequestBody MypageRequestDTO mypageRequestDTO, HttpServletRequest request) {
 
         userService.mypage_update(mypageRequestDTO, request);

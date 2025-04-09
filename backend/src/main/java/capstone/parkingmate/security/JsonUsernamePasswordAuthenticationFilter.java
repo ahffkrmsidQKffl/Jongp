@@ -68,6 +68,18 @@ public class JsonUsernamePasswordAuthenticationFilter extends AbstractAuthentica
         HttpSession session = request.getSession(true);
         session.setAttribute("user_id", user.getUser_id());
 
+        // 관리자 여부 확인
+        boolean admin = authResult.getName().equals("admin");
+
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("status", 200);
+        responseData.put("message", "로그인 성공");
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("admin", admin);
+
+        responseData.put("data", data);
+
         // SecurityContext 생성 및 저장
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
         securityContext.setAuthentication(authResult);
@@ -81,8 +93,9 @@ public class JsonUsernamePasswordAuthenticationFilter extends AbstractAuthentica
         response.setCharacterEncoding("UTF-8");
 
         response.setStatus(HttpServletResponse.SC_OK);
-        response.getWriter().write("{\"status\": 200,\"message\": \"로그인 성공\",\"data\": null}");
-        response.getWriter().flush();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.writeValue(response.getWriter(), responseData);
     }
 
     @Override

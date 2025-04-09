@@ -53,6 +53,8 @@ public class ParkingLotService {
         List<ParkingLot> datas = parkingLotRepository.findByKeyword(keyword);
         List<SearchResponseDTO> responseDTOS = new ArrayList<>();
 
+        // 이 방식 말고 레포에서 데이터 가져올 때 SearchResponseDTO 필드들로만 구성된 컬럼만 가져오는 방법도 고려해보기
+        // 응답 객체 생성. 코드 개선하기!! 너무 지저분함. - 스트림 사용
         for(ParkingLot data : datas) {
             SearchResponseDTO responseDTO = new SearchResponseDTO();
 
@@ -67,6 +69,9 @@ public class ParkingLotService {
             }
             responseDTOS.add(responseDTO);
         }
+
+        // 로깅
+        log.info("200 : 정상 처리, 주차장 검색 성공");
 
         return responseDTOS;
     }
