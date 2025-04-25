@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "email": "hong@example.com",
+    "nickname": "홍길동",
+    "joined_at": "2024-01-15",
+    "preferred_factor": "FEE",
+    "password": "5678"
+  },
+  {
+    "id": 2,
+    "email": "kim@example.com",
+    "nickname": "김철수",
+    "joined_at": "2024-02-20",
+    "preferred_factor": "DISTANCE",
+    "password": "5678"
+  },
+  {
+    "id": 3,
+    "email": "lee@example.com",
+    "nickname": "이영희",
+    "joined_at": "2024-03-05",
+    "preferred_factor": "CONGESTION",
+    "password": "5678"
+  },
+  {
+    "email": "aa@aa.com",
+    "password": "5678",
+    "nickname": "aaaa",
+    "preferred_factor": "FEE",
+    "id": 4,
+    "joined_at": "2025-04-25"
+  },
+  {
+    "email": "ddd@ddd.com",
+    "password": "5678",
+    "nickname": "ddddd",
+    "preferred_factor": "FEE",
+    "id": 5,
+    "joined_at": "2025-04-25"
+  },
+  {
+    "email": "ss@ss.com",
+    "password": "5678",
+    "nickname": "sssssd",
+    "preferred_factor": "CONGESTION",
+    "id": 6,
+    "joined_at": "2025-04-25"
+  },
+  {
+    "email": "qwe@qwe.com",
+    "password": "5678",
+    "nickname": "qwe",
+    "preferred_factor": "FEE",
+    "id": 7,
+    "joined_at": "2025-04-25"
+  },
+  {
+    "email": "a@a.com",
+    "password": "5678",
+    "nickname": "a",
+    "preferred_factor": "FEE",
+    "id": 8,
+    "joined_at": "2025-04-25"
+  },
+  {
+    "email": "a1@a1.com",
+    "password": "5678",
+    "nickname": "a1",
+    "preferred_factor": "FEE",
+    "id": 9,
+    "joined_at": "2025-04-25"
+  }
+]
