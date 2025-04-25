@@ -34,16 +34,18 @@ const ParkingPopup = ({ parking, onClose }) => {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!user) return;
+
       try {
-        const bookmarks = await apiRequest("/api/bookmarks");
+        const bookmarks = await apiRequest("/api/bookmarks", "GET", null, user.email);
         setIsBookmarked(bookmarks.some((b) => b.p_id === p_id));
       } catch (err) {
         console.error("북마크 조회 실패", err);
       }
 
       try {
-        const ratings = await apiRequest("/api/ratings");
-        const myRating = ratings.find((r) => r.p_id === p_id && r.email === user?.email);
+        const ratings = await apiRequest("/api/ratings", "GET", null, user.email);
+        const myRating = ratings.find((r) => r.p_id === p_id && r.email === user.email);
         if (myRating) {
           setRating(myRating.score);
           setRatingId(myRating.rating_id);
@@ -53,16 +55,21 @@ const ParkingPopup = ({ parking, onClose }) => {
       }
     };
 
-    if (user) fetchData();
+    fetchData();
   }, [user, p_id]);
 
   const toggleBookmark = async () => {
+    if (!user) {
+      toast.error("로그인이 필요합니다.");
+      return;
+    }
+
     try {
       if (isBookmarked) {
-        await apiRequest(`/api/bookmarks/${p_id}`, "DELETE");
+        await apiRequest(`/api/bookmarks/${p_id}`, "DELETE", null, user.email);
         setIsBookmarked(false);
       } else {
-        await apiRequest("/api/bookmarks", "POST", { p_id });
+        await apiRequest("/api/bookmarks", "POST", { p_id }, user.email);
         setIsBookmarked(true);
       }
     } catch {
@@ -71,20 +78,25 @@ const ParkingPopup = ({ parking, onClose }) => {
   };
 
   const handleRatingSave = async (newScore) => {
+    if (!user) {
+      toast.error("로그인이 필요합니다.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       if (ratingId) {
         await apiRequest("/api/ratings", "PATCH", {
           rating_id: ratingId,
           score: newScore,
-        });
+        }, user.email);
         toast.success("평점이 수정되었습니다!");
       } else {
         const res = await apiRequest("/api/ratings", "POST", {
           p_id,
           score: newScore,
-        });
-        setRatingId(res.rating.rating_id);
+        }, user.email);
+        setRatingId(res.rating_id);
         toast.success("평점이 등록되었습니다!");
       }
       setRating(newScore);

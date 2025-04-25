@@ -1,4 +1,3 @@
-// Login.jsx
 import { useState, useContext, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
@@ -6,6 +5,7 @@ import { apiRequest } from "../api/api";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./Login.css";
+import logoImg from "../assets/logo.png"; // 로고 이미지 경로
 
 export default function Login({ onLoginRedirect }) {
   const { setUser } = useContext(UserContext);
@@ -46,7 +46,6 @@ export default function Login({ onLoginRedirect }) {
 
       toast.success("로그인 성공!");
 
-      // 관리자 전용 조건
       if (email === "admin" && password === "admin") {
         onLoginRedirect("/admin/users");
       } else {
@@ -60,32 +59,40 @@ export default function Login({ onLoginRedirect }) {
 
   return (
     <div className="login-container">
-      <form className="login-form" onSubmit={(e) => e.preventDefault()}>
-        <h2>로그인</h2>
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="이메일"
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="비밀번호"
-        />
-        <label>
+      <div className="login-left">
+        <img src={logoImg} alt="로고" />
+        <h1>스마트 파킹</h1>
+        <p>AI 기반 실시간 주차 추천 서비스</p>
+      </div>
+
+      <div className="login-right">
+        <form className="login-form" onSubmit={(e) => e.preventDefault()}>
+          <h2>로그인</h2>
           <input
-            type="checkbox"
-            checked={autoLogin}
-            onChange={(e) => setAutoLogin(e.target.checked)}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="이메일"
           />
-          자동 로그인
-        </label>
-        <button onClick={handleLogin}>로그인</button>
-        <div className="signup-link">
-          <Link to="/signup">회원가입</Link>
-        </div>
-      </form>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="비밀번호"
+          />
+          <label>
+            <input
+              type="checkbox"
+              checked={autoLogin}
+              onChange={(e) => setAutoLogin(e.target.checked)}
+            />
+            자동 로그인
+          </label>
+          <button onClick={handleLogin}>로그인</button>
+          <div className="signup-link">
+            <Link to="/signup">회원가입</Link>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

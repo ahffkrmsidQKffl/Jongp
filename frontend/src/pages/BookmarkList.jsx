@@ -18,7 +18,7 @@ const BookmarkList = () => {
   useEffect(() => {
     const fetchData = async () => {
       const [bm, lots] = await Promise.all([
-        apiRequest("/api/bookmarks"),
+        apiRequest("/api/bookmarks", "GET", null, user?.email),
         apiRequest("/api/parking-lots"),
       ]);
       setBookmarks(bm);
@@ -49,7 +49,7 @@ const BookmarkList = () => {
 
   const handleDelete = async (p_id) => {
     try {
-      await apiRequest(`/api/bookmarks/${p_id}`, "DELETE");
+      await apiRequest(`/api/bookmarks/${p_id}`, "DELETE", null, user?.email);
       setBookmarks((prev) => prev.filter((lot) => lot.p_id !== p_id));
       toast.success("북마크가 삭제되었습니다.");
     } catch {
@@ -59,7 +59,7 @@ const BookmarkList = () => {
 
   const handleAdd = async (lot) => {
     try {
-      await apiRequest("/api/bookmarks", "POST", { p_id: lot.p_id });
+      await apiRequest("/api/bookmarks", "POST", { p_id: lot.p_id }, user?.email);
       setBookmarks((prev) => [...prev, { p_id: lot.p_id }]);
       toast.success("북마크가 추가되었습니다.");
     } catch {

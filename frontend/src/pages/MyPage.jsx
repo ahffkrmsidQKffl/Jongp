@@ -16,10 +16,18 @@ const MyPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isPasswordChangeVisible, setIsPasswordChangeVisible] = useState(false);
 
+  // ✅ 로그인하지 않은 경우 접근 차단
+  if (!user) {
+    toast.error("로그인이 필요합니다.");
+    navigate("/login");
+    return null;
+  }
+
+  // ✅ 사용자 정보 불러오기
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const res = await apiRequest("/api/users/mypage");
+        const res = await apiRequest("/api/users/mypage", "GET", null, user.email);
         setNickname(res.nickname);
         setPreferred(res.preferred_factor);
         setUser(res);
@@ -36,7 +44,7 @@ const MyPage = () => {
       await apiRequest("/api/users/mypage", "PATCH", {
         nickname,
         preferred_factor: preferred,
-      });
+      }, user.email);
 
       toast.success("정보가 수정되었습니다.");
       setUser((prev) => ({
@@ -59,7 +67,7 @@ const MyPage = () => {
       await apiRequest("/api/users/password", "PATCH", {
         current_password: currentPassword,
         new_password: newPassword,
-      });
+      }, user.email);
 
       toast.success("비밀번호가 수정되었습니다.");
       setCurrentPassword("");
@@ -107,7 +115,6 @@ const MyPage = () => {
             내가 준 평점 관리
           </button>
         </div>
-
 
         <button
           type="button"

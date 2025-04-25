@@ -15,23 +15,33 @@ const Ratings = () => {
   const [selectedRating, setSelectedRating] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
 
+  // ✅ 로그인 상태 확인
+  if (!user) {
+    toast.error("로그인이 필요합니다.");
+    return null;
+  }
+
   useEffect(() => {
     const fetchRatings = async () => {
-      const [userRatings, allLots] = await Promise.all([
-        apiRequest("/api/ratings"),
-        apiRequest("/api/parking-lots"),
-      ]);
-      setRatings(userRatings);
-      setParkingLots(allLots);
+      try {
+        const [userRatings, allLots] = await Promise.all([
+          apiRequest("/api/ratings", "GET", null, user.email),
+          apiRequest("/api/parking-lots")
+        ]);
+        setRatings(userRatings.filter(r => r.email === user.email)); // 혹시 전체 올 경우 대비
+        setParkingLots(allLots);
+      } catch (err) {
+        toast.error("평점 정보를 불러오지 못했습니다.");
+      }
     };
     fetchRatings();
-  }, []);
+  }, [user.email]);
 
   const getLotDetails = (p_id) => parkingLots.find((lot) => lot.p_id === p_id);
 
   const handleDelete = async (rating_id) => {
     try {
-      await apiRequest("/api/ratings", "DELETE", { rating_id });
+      await apiRequest("/api/ratings", "DELETE", { rating_id }, user.email);
       setRatings((prev) => prev.filter((r) => r.rating_id !== rating_id));
       toast.success("평점이 삭제되었습니다.");
     } catch {
@@ -44,7 +54,8 @@ const Ratings = () => {
       await apiRequest("/api/ratings", "PATCH", {
         rating_id: selectedRating.rating_id,
         score: newScore,
-      });
+      }, user.email);
+
       setRatings((prev) =>
         prev.map((r) =>
           r.rating_id === selectedRating.rating_id
