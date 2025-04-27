@@ -87,7 +87,7 @@ public class UserService {
             // 404 NOTFOUND 에러 응답
             throw new CustomException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
         }
-
+        
         // 사용자 데이터 가져오기
         Long user_id = (Long) session.getAttribute("user_id");
         User user = userRepository.findById(user_id)
@@ -187,7 +187,7 @@ public class UserService {
         // 정보 수정
         user.setNickname(mypageRequestDTO.getNickname());
         user.setPreferred_factor(PreferredFactor.valueOf(mypageRequestDTO.getPreferred_factor()));
-
+        
         // 수정된 사용자 데이터 저장
         userRepository.save(user);
 

@@ -1,17 +1,20 @@
 package capstone.parkingmate.service;
 
-import capstone.parkingmate.dto.DetailResponseDTO;
-import capstone.parkingmate.dto.SearchResponseDTO;
+import capstone.parkingmate.dto.*;
 import capstone.parkingmate.entity.ParkingLot;
+import capstone.parkingmate.entity.User;
+import capstone.parkingmate.enums.PreferredFactor;
 import capstone.parkingmate.exception.CustomException;
 import capstone.parkingmate.repository.ParkingLotRepository;
+import capstone.parkingmate.repository.UserRepository;
+import capstone.parkingmate.util.AiModuleCaller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -19,6 +22,84 @@ import java.util.List;
 public class ParkingLotService {
 
     private final ParkingLotRepository parkingLotRepository;
+    private final AiModuleCaller aiModuleCaller;
+    private final UserRepository userRepository;
+
+    // 현재 위치 기반 추천 주차장
+    public List<ParkingLotNearbyResponseDTO> recommendNearby(Long user_id, ParkingLotNearbyRequestDTO requestDTO) {
+
+        // 후보 리스트 추출
+        List<ParkingLot> nearbyLots = parkingLotRepository.findWithinRadius(requestDTO.getLatitude(), requestDTO.getLongitude(), 500.0);
+
+        // 후보 리스트가 없을 경우 빈 리스트 반환
+        if(nearbyLots.isEmpty()) {
+            return Collections.emptyList();
+        }
+        
+        // ai 모듈에 넘길 데이터 가공
+        List<Map<String, Object>> aiInput = nearbyLots.stream()
+                .map(lot -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("p_id", lot.getName());
+                    map.put("review", lot.getAvgRating() != null ? lot.getAvgRating().getAvg_score() : 0.0);
+                    map.put("weekday", requestDTO.getWeekday());
+                    map.put("hour", requestDTO.getHour());
+                    return map;
+                })
+                .collect(Collectors.toList());
+
+        System.out.println("aiInput = " + aiInput);
+
+        // ai 모듈 호출
+        List<Map<String, Object>> aiResults = aiModuleCaller.callAiModule(aiInput, requestDTO.getLatitude(), requestDTO.getLongitude());
+
+        /**
+        // 가데이터로 테스트
+        Map<String, Object> element1 = new HashMap<>();
+        element1.put("주차장명", "복정역"); element1.put("혼잡도우선", 95.74); element1.put("거리우선", 95.95); element1.put("요금우선", 84.18); element1.put("리뷰우선", 87.95);
+
+        Map<String, Object> element2 = new HashMap<>();
+        element2.put("주차장명", "볕우물"); element2.put("혼잡도우선", 84.51); element2.put("거리우선", 60.21); element2.put("요금우선", 90.80); element2.put("리뷰우선", 75.80);
+
+        Map<String, Object> element3 = new HashMap<>();
+        element3.put("주차장명", "용산주차빌딩"); element3.put("혼잡도우선", 69.58); element3.put("거리우선", 29.73); element3.put("요금우선", 29.73); element3.put("리뷰우선", 78.73);
+
+        List<Map<String, Object>> aiResults = new ArrayList<>();
+        aiResults.add(element1);
+        aiResults.add(element2);
+        aiResults.add(element3);
+
+        System.out.println("aiResults = " + aiResults);
+
+         **/
+
+        // 사용자 선호 요소 호출
+        User user = userRepository.findById(user_id)
+                .orElseThrow(() -> new CustomException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+        String preferred;
+        if(user.getPreferred_factor().equals(PreferredFactor.FEE)) {
+            preferred = "요금우선";
+        } else if (user.getPreferred_factor().equals(PreferredFactor.DISTANCE)) {
+            preferred = "거리우선";
+        } else if (user.getPreferred_factor().equals(PreferredFactor.RATING)) {
+            preferred = "리뷰우선";
+        } else {
+            preferred = "혼잡도우선";
+        }
+
+        List<ParkingLotNearbyResponseDTO> result = aiResults.stream()
+                .map(entry -> ParkingLotNearbyResponseDTO.builder()
+                        .name((String) entry.get("주차장명"))
+                        .recommendationScore((Double) entry.get(preferred))
+                        .build())
+                .sorted((a,b) -> Double.compare(b.getRecommendationScore(), a.getRecommendationScore())) // 추천점수가 높은 순서로 정렬
+                .collect(Collectors.toList());
+
+        System.out.println("result = " + result);
+
+        return result;
+    }
 
     // 주차장 상세정보
     public DetailResponseDTO detail(String p_id) {
@@ -26,7 +107,7 @@ public class ParkingLotService {
         // 주차장 데이터 가져오기
         ParkingLot data = parkingLotRepository.findById(Long.valueOf(p_id))
                 .orElseThrow(() -> new CustomException("주차장을 찾을 수 없습니다.", HttpStatus.NOT_FOUND) );
-
+        
         // 응답 객체 생성
         DetailResponseDTO responseDTO = new DetailResponseDTO();
         responseDTO.setP_id(data.getP_id());
@@ -43,7 +124,7 @@ public class ParkingLotService {
 
         // 로깅
         log.info("200 : 정상 처리, 주차장 {} 상세정보 성공", p_id);
-
+        
         return responseDTO;
     }
 

@@ -1,9 +1,8 @@
 package capstone.parkingmate.controller;
 
-import capstone.parkingmate.dto.DetailResponseDTO;
-import capstone.parkingmate.dto.ResponseData;
-import capstone.parkingmate.dto.SearchResponseDTO;
+import capstone.parkingmate.dto.*;
 import capstone.parkingmate.service.ParkingLotService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +17,24 @@ public class ParkingLotController {
 
     private final ParkingLotService parkingLotService;
 
+
+    // 현재 위치 기반 추천 주차장 리스트
+    @PostMapping("/recommendations/nearby")
+    public ResponseEntity<ResponseData<List<ParkingLotNearbyResponseDTO>>> recommendation_nearby(
+            @RequestBody ParkingLotNearbyRequestDTO requestDTO, HttpSession session
+    ) {
+        Long user_id = (Long) session.getAttribute("user_id");
+        //user_id null 값일 경우 에러 반환 코드 추가
+
+        List<ParkingLotNearbyResponseDTO> recommendedLots = parkingLotService.recommendNearby(user_id, requestDTO);
+
+        return ResponseEntity.ok(ResponseData.res(HttpStatus.OK, "현재 위치 기반 추천 주차장 조회 성공", recommendedLots));
+    }
+    
+    
+    // 목적지 기반 추천 주차장 리스트
+    
+    
     // 주차장 상세 정보 조회
     @GetMapping("/{p_id}")
     public ResponseEntity<ResponseData<DetailResponseDTO>> detail(@PathVariable("p_id") String p_id) {
@@ -26,7 +43,7 @@ public class ParkingLotController {
 
         return ResponseEntity.ok(ResponseData.res(HttpStatus.OK, "주차장 상세정보 조회 성공", responseDTO));
     }
-
+    
     
     // 주차장 검색
     @GetMapping("/search")

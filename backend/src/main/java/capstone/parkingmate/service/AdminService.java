@@ -40,7 +40,7 @@ public class AdminService {
             responseDTO.setNickname(data.getNickname());
             responseDTO.setPreferred_factor(data.getPreferred_factor());
             responseDTO.setCreated_at(data.getCreated_at());
-
+            
             responseDTOS.add(responseDTO);
         }
 
@@ -126,22 +126,22 @@ public class AdminService {
 
     // 주차장 정보 수정
     public void update(ParkingLotUpdateRequestDTO updateRequestDTO) {
-
+        
         // 주차장 데이터 가져오기
         ParkingLot data = parkingLotRepository.findById(updateRequestDTO.getP_id())
                 .orElseThrow(() -> new CustomException("주차장을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
-
-
+        
+        
         // 정보 수정
         data.setName(updateRequestDTO.getName());
         data.setAddress(updateRequestDTO.getAddress());
         data.setFee(updateRequestDTO.getFee());
         data.setLatitude(updateRequestDTO.getLatitude());
         data.setLongitude(updateRequestDTO.getLongitude());
-
+        
         // 데이터 저장
         parkingLotRepository.save(data);
-
+        
         // 로깅
         log.info("200 : 정상 처리, {} 정보 수정 완료", updateRequestDTO.getName());
     }

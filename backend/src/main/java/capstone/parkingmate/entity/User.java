@@ -27,7 +27,7 @@ public class User {
     // 비밀번호. 공백 불가능.
     @Column(nullable = false)
     private String password;
-
+    
     // 닉네임. 공백 불가능, 중복 가능
     @Column(nullable = false)
     private String nickname;
@@ -38,7 +38,7 @@ public class User {
 
     // 사용자 계정 생성일
     private LocalDateTime created_at = LocalDateTime.now();
-
+    
     // 사용자 계정 수정일
     private LocalDateTime updated_at = LocalDateTime.now();
 

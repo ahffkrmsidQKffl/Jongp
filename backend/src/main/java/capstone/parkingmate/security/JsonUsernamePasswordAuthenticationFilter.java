@@ -1,5 +1,6 @@
 package capstone.parkingmate.security;
 
+import capstone.parkingmate.dto.ResponseData;
 import capstone.parkingmate.entity.User;
 import capstone.parkingmate.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,6 +21,7 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.SecurityContextRepository;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -59,7 +61,7 @@ public class JsonUsernamePasswordAuthenticationFilter extends AbstractAuthentica
                                             FilterChain chain, Authentication authResult)
             throws IOException, ServletException {
 
-        log.info("로그인 성공: {}", authResult.getName());
+        log.info("200 : 정상처리, 사용자 {} 로그인 성공", authResult.getName());
 
         // 사용자 데이터 가져오기
         User user = userRepository.findByEmail(authResult.getName());
@@ -103,7 +105,7 @@ public class JsonUsernamePasswordAuthenticationFilter extends AbstractAuthentica
                                               AuthenticationException failed)
             throws IOException, ServletException {
 
-        log.info("로그인 실패: {}", failed.getMessage());
+        log.info("401 : 인증 실패, 로그인 실패: {}", failed.getMessage());
 
         // 한글 깨지지 않도록 인코딩 설정
         response.setContentType("application/json; charset=UTF-8");
