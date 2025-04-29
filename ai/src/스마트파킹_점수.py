@@ -115,7 +115,18 @@ def recommend_for_candidates(candidates, parking_duration=120, base_lat=37.450, 
         rev_score = np.clip(review,0,5)/5*100
         records.append({"p_id":name, "congestion_score":cong_score, "distance":dist, "fee":fee, "review_score":rev_score})
     fees = [r["fee"] for r in records if r["fee"] is not None]; dists = [r["distance"] for r in records if r["distance"] is not None]
-    min_fee,max_fee = min(fees),max(fees); min_dist,max_dist = min(dists),max(dists)
+
+    # **안전장치**: 빈 리스트일 경우 최소·최대를 0,1로 세팅
+    if fees:
+        min_fee, max_fee = min(fees), max(fees)
+    else:
+        min_fee, max_fee = 0.0, 1.0
+
+    if dists:
+        min_dist, max_dist = min(dists), max(dists)
+    else:
+        min_dist, max_dist = 0.0, 1.0
+
     scenarios = {"혼잡도우선":{"w_cong":0.8,"w_dist":0.1,"w_fee":0.05,"w_rev":0.05},
                  "거리우선":{"w_cong":0.5,"w_dist":0.3,"w_fee":0.1,"w_rev":0.1},
                  "요금우선":{"w_cong":0.5,"w_dist":0.1,"w_fee":0.3,"w_rev":0.1},
@@ -124,8 +135,8 @@ def recommend_for_candidates(candidates, parking_duration=120, base_lat=37.450, 
     for key,w in scenarios.items():
         temp=[]
         for r in records:
-            fee_s = (max_fee-r["fee"])/(max_fee-min_fee)*100 if max_fee>min_fee else 0
-            dist_s = (max_dist-r["distance"])/(max_dist-min_dist)*100 if max_dist>min_dist else 0
+            fee_s = ( (max_fee-r["fee"])/(max_fee-min_fee) )*100 if max_fee>min_fee else 0
+            dist_s = ( (max_dist-r["distance"])/(max_dist-min_dist) )*100 if max_dist>min_dist else 0
             score = w["w_cong"]*r["congestion_score"]+w["w_dist"]*dist_s+ w["w_fee"]*fee_s+ w["w_rev"]*r["review_score"]
             temp.append({"p_id":r["p_id"],"score":score})
         results[key] = temp
