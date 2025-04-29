@@ -26,6 +26,9 @@ public class Rating {
     // 평점 작성일
     private LocalDateTime created_at = LocalDateTime.now();
 
+    // 평점 수정일
+    private LocalDateTime updated_at = LocalDateTime.now();
+
     // 평점 작성 사용자
     @ManyToOne(fetch = FetchType.LAZY) // 지연 로딩: 필요할 때만 User 객체 가져옴
     @JoinColumn(name = "user_id", nullable = false)
@@ -35,5 +38,18 @@ public class Rating {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "p_id", nullable = false)
     private ParkingLot parkingLot;
+
+    // 엔티티가 처음 저장될 때 작성일과 수정일을 현재 시간으로 설정
+    @PrePersist
+    protected void onCreate() {
+        this.created_at = LocalDateTime.now();
+        this.updated_at = LocalDateTime.now();
+    }
+
+    // 엔티티가 업데이트될 때 수정일을 현재 시간으로 갱신
+    @PreUpdate
+    protected void onUpdate() {
+        this.updated_at = LocalDateTime.now();
+    }
 
 }
