@@ -38,6 +38,7 @@ public class AiModuleCaller {
         payload.put("base_lon", baseLon);
 
         ProcessBuilder builder = new ProcessBuilder("python3", "-u", scriptPath);
+        builder.directory(new File("/home/t25115/Jongp/ai/src"));
 
         // 오류 포함 불러오기(무한대기 방지용)
         builder.redirectErrorStream(true);
