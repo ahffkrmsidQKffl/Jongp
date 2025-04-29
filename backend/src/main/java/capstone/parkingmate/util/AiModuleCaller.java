@@ -23,7 +23,7 @@ public class AiModuleCaller {
     private final String scriptPath;
 
     public AiModuleCaller(
-            @Value("${ai.script.path:/home/t25115/Jongp/ai/src/스마트파킹_점수.py}") String scriptPath
+            @Value("${ai.script.path:src/main/resources/ai/recommend_ai.py}") String scriptPath
     ) {
         // Normalize to absolute path
         this.scriptPath = Paths.get(scriptPath).toAbsolutePath().toString();
