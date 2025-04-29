@@ -53,26 +53,6 @@ public class ParkingLotService {
         // ai 모듈 호출
         List<Map<String, Object>> aiResults = aiModuleCaller.callAiModule(aiInput, requestDTO.getLatitude(), requestDTO.getLongitude());
 
-        /**
-        // 가데이터로 테스트
-        Map<String, Object> element1 = new HashMap<>();
-        element1.put("주차장명", "복정역"); element1.put("혼잡도우선", 95.74); element1.put("거리우선", 95.95); element1.put("요금우선", 84.18); element1.put("리뷰우선", 87.95);
-
-        Map<String, Object> element2 = new HashMap<>();
-        element2.put("주차장명", "볕우물"); element2.put("혼잡도우선", 84.51); element2.put("거리우선", 60.21); element2.put("요금우선", 90.80); element2.put("리뷰우선", 75.80);
-
-        Map<String, Object> element3 = new HashMap<>();
-        element3.put("주차장명", "용산주차빌딩"); element3.put("혼잡도우선", 69.58); element3.put("거리우선", 29.73); element3.put("요금우선", 29.73); element3.put("리뷰우선", 78.73);
-
-        List<Map<String, Object>> aiResults = new ArrayList<>();
-        aiResults.add(element1);
-        aiResults.add(element2);
-        aiResults.add(element3);
-
-        System.out.println("aiResults = " + aiResults);
-
-         **/
-
         // 사용자 선호 요소 호출
         User user = userRepository.findById(user_id)
                 .orElseThrow(() -> new CustomException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
