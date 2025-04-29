@@ -35,8 +35,8 @@ public interface ParkingLotRepository extends JpaRepository<ParkingLot, Long> {
             SELECT *
             FROM parking_lot
             ORDER BY ST_Distance_Sphere(
-              point(latitude, longitude),
-              point(:lat, :lon)
+              point(longitude, latitude),
+              point(:lon, :lat)
             ) ASC
             LIMIT 3
             """, nativeQuery = true)
