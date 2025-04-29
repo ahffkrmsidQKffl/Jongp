@@ -131,22 +131,31 @@ def recommend_for_candidates(candidates, parking_duration=120, base_lat=37.450, 
 
 # === 예시 입력 및 결과 출력 ===
 if __name__ == "__main__":
-    # 기준 위치 예시 데이터
-    base_lat, base_lon = 37.450, 127.129  # 가천대학교 주변 좌표 예시
 
-    # 후보 주차장 리스트 예시
-    candidates = [
-        {"p_id":"복정역","review":4.2,"weekday":3,"hour":14},
-        {"p_id":"볕우물","review":3.5,"weekday":3,"hour":14},
-        {"p_id":"용산주차빌딩","review":4.9,"weekday":3,"hour":14}
-    ]
+    data = json.load(sys.stdin)
+    candidates = data["candidates"]
+    parking_duration = data.get("parking_duration", 120)
+    base_lat = data.get("base_lat")
+    base_lon = data.get("base_lon")
 
     # 추천 수행
-    res = recommend_for_candidates(candidates, parking_duration=120, base_lat=base_lat, base_lon=base_lon)
+    res = recommend_for_candidates(candidates, parking_duration, base_lat, base_lon)
 
-    # 결과 출력
-    print("주차장명\t혼잡도우선\t거리우선\t요금우선\t리뷰우선")
-    for c in candidates:
-        name = c["p_id"]
-        scores = {key: next(item["score"] for item in res[key] if item["p_id"]==name) for key in res}
-        print(f"{name}\t{scores['혼잡도우선']:.2f}\t{scores['거리우선']:.2f}\t{scores['요금우선']:.2f}\t{scores['리뷰우선']:.2f}")
+    # 3) p_id 별로 4개 시나리오 점수를 하나의 dict 에 합치기
+    combined = []
+    # 예를 들어 혼잡도우선 리스트를 기준으로 루프
+    for item in res["혼잡도우선"]:
+        p = item["p_id"]
+        entry = {
+            "p_id": p,
+            "주차장명": p,
+            "혼잡도우선": round(item["score"], 2)
+        }
+        # 나머지 시나리오 점수도 동일 p_id 에서 찾아 넣기
+        for scenario in ["거리우선", "요금우선", "리뷰우선"]:
+            score = next(x["score"] for x in res[scenario] if x["p_id"] == p)
+            entry[scenario] = round(score, 2)
+        combined.append(entry)
+
+    # 4) JSON 으로 한 번에 출력
+    json.dump(combined, sys.stdout, ensure_ascii=False)
