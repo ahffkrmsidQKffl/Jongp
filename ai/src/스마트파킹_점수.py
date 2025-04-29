@@ -132,13 +132,28 @@ def recommend_for_candidates(candidates, parking_duration=120, base_lat=37.450, 
                  "요금우선":{"w_cong":0.5,"w_dist":0.1,"w_fee":0.3,"w_rev":0.1},
                  "리뷰우선":{"w_cong":0.5,"w_dist":0.1,"w_fee":0.1,"w_rev":0.3}}
     results={}
-    for key,w in scenarios.items():
-        temp=[]
+    for key, w in scenarios.items():
+        temp = []
         for r in records:
-            fee_s = ( (max_fee-r["fee"])/(max_fee-min_fee) )*100 if max_fee>min_fee else 0
-            dist_s = ( (max_dist-r["distance"])/(max_dist-min_dist) )*100 if max_dist>min_dist else 0
-            score = w["w_cong"]*r["congestion_score"]+w["w_dist"]*dist_s+ w["w_fee"]*fee_s+ w["w_rev"]*r["review_score"]
-            temp.append({"p_id":r["p_id"],"score":score})
+            # fee 점수 계산 (fee가 None 이거나 max==min 이면 0)
+            if r["fee"] is not None and max_fee > min_fee:
+                fee_s = (max_fee - r["fee"]) / (max_fee - min_fee) * 100
+            else:
+                fee_s = 0
+
+            # distance 점수 계산 (distance가 None 이거나 max==min 이면 0)
+            if r["distance"] is not None and max_dist > min_dist:
+                dist_s = (max_dist - r["distance"]) / (max_dist - min_dist) * 100
+            else:
+                dist_s = 0
+
+            score = (
+                    w["w_cong"]*r["congestion_score"] +
+                    w["w_dist"]*dist_s +
+                    w["w_fee"]*fee_s +
+                    w["w_rev"]*r["review_score"]
+            )
+            temp.append({"p_id": r["p_id"], "score": score})
         results[key] = temp
     return results
 
