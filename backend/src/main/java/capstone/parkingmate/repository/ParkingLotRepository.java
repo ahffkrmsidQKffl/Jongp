@@ -30,4 +30,18 @@ public interface ParkingLotRepository extends JpaRepository<ParkingLot, Long> {
             nativeQuery = true
     )
     List<ParkingLot> findWithinRadius(@Param("lat") double lat, @Param("lon") double lon, @Param("radius") double radiusMeters);
+
+    @Query(value = """
+            SELECT *
+            FROM parking_lot
+            ORDER BY ST_Distance_Sphere(
+              point(latitude, longitude),
+              point(:lat, :lon)
+            ) ASC
+            LIMIT 3
+            """, nativeQuery = true)
+    List<ParkingLot> findTop3ByNearest(
+            @Param("lat") double latitude,
+            @Param("lon") double longitude
+    );
 }

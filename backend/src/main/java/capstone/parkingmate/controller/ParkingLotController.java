@@ -33,7 +33,17 @@ public class ParkingLotController {
     
     
     // 목적지 기반 추천 주차장 리스트
-    
+    @PostMapping("/recommendations/destination")
+    public ResponseEntity<ResponseData<List<ParkingLotNearbyResponseDTO>>> recommendation_destination(
+            @RequestBody ParkingLotNearbyRequestDTO requestDTO, HttpSession session
+    ) {
+        Long user_id = (Long) session.getAttribute("user_id");
+        //user_id null 값일 경우 에러 반환 코드 추가
+
+        List<ParkingLotNearbyResponseDTO> recommendedLots = parkingLotService.recommendNearby(user_id, requestDTO);
+
+        return ResponseEntity.ok(ResponseData.res(HttpStatus.OK, "목적지 기반 추천 주차장 조회 성공", recommendedLots));
+    }
     
     // 주차장 상세 정보 조회
     @GetMapping("/{p_id}")

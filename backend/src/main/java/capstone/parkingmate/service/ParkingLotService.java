@@ -29,7 +29,7 @@ public class ParkingLotService {
     public List<ParkingLotNearbyResponseDTO> recommendNearby(Long user_id, ParkingLotNearbyRequestDTO requestDTO) {
 
         // 후보 리스트 추출
-        List<ParkingLot> nearbyLots = parkingLotRepository.findWithinRadius(requestDTO.getLatitude(), requestDTO.getLongitude(), 500.0);
+        List<ParkingLot> nearbyLots = parkingLotRepository.findTop3ByNearest(requestDTO.getLatitude(), requestDTO.getLongitude());
 
         // 후보 리스트가 없을 경우 빈 리스트 반환
         if(nearbyLots.isEmpty()) {
