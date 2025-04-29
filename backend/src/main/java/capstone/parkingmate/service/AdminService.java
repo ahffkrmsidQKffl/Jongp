@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,6 +61,25 @@ public class AdminService {
 
         // 로깅
         log.info("200 : 정상 처리, 사용자 삭제 성공");
+    }
+
+    // 사용자 검색
+    @Transactional(readOnly = true)
+    public ResponseData<?> search_users(String keyword) {
+        List<UsersResponseDTO> result = userRepository.findAll().stream()
+                .filter(user -> user.getEmail().contains(keyword) || user.getNickname().contains(keyword))
+                .map(user -> {
+                    UsersResponseDTO dto = new UsersResponseDTO();
+                    dto.setUser_id(user.getUser_id());
+                    dto.setEmail(user.getEmail());
+                    dto.setNickname(user.getNickname());
+                    dto.setPreferred_factor(user.getPreferred_factor());
+                    dto.setCreated_at(user.getCreated_at());
+                    return dto;
+                })
+                .toList();
+
+        return ResponseData.res(HttpStatus.OK, "관리자용 사용자 검색 성공", result);
     }
 
 
@@ -158,6 +178,38 @@ public class AdminService {
         log.info("200 : 정상 처리, {} 정보 삭제 성공", data.getName());
     }
 
+    // 주차장 검색
+    @Transactional(readOnly = true)
+    public ResponseData<?> search_parkingLots(String keyword) {
+        // 1. 주차장 목록 가져오기
+        List<ParkingLot> parkingLots = parkingLotRepository.findAll();
+
+        // 2. keyword로 필터링 (이름 + 주소 둘 다)
+        List<ParkingLotResponseDTO> result = parkingLots.stream()
+                .filter(p -> p.getName().contains(keyword) || p.getAddress().contains(keyword))
+                .map(p -> {
+                    ParkingLotResponseDTO dto = new ParkingLotResponseDTO();
+                    dto.setP_id(p.getP_id());
+                    dto.setName(p.getName());
+                    dto.setAddress(p.getAddress());
+                    dto.setLatitude(p.getLatitude());
+                    dto.setLongitude(p.getLongitude());
+                    dto.setFee(p.getFee());
+
+                    // ⭐ avg_score는 ParkingLotAvgRating 엔티티에서 가져오기
+                    if (p.getAvgRating() != null) {
+                        dto.setAvg_rating(p.getAvgRating().getAvg_score());
+                    } else {
+                        dto.setAvg_rating(0.0); // 평균 평점 없으면 기본값 0.0
+                    }
+
+                    return dto;
+                })
+                .toList();
+
+        return ResponseData.res(HttpStatus.OK, "관리자용 주차장 검색 성공", result);
+    }
+
 
     // 평점 리스트 조회
     public List<RatingResponseDTO> retrieve_ratings() {
@@ -193,5 +245,24 @@ public class AdminService {
 
         // 로깅
         log.info("200 : 정상 처리, 평점 {} 삭제 성공", data.getRating_id());
+    }
+
+    // 평점 검색
+    @Transactional(readOnly = true)
+    public ResponseData<?> search_ratings(String keyword) {
+        List<RatingResponseDTO> result = ratingRepository.findAll().stream()
+                .filter(rating -> rating.getParkingLot().getName().contains(keyword)) // ★ 주차장 이름 기준으로 검색
+                .map(rating -> {
+                    RatingResponseDTO dto = new RatingResponseDTO();
+                    dto.setRating_id(rating.getRating_id());
+                    dto.setUser_name(rating.getUser().getNickname());
+                    dto.setP_name(rating.getParkingLot().getName());
+                    dto.setScore(rating.getScore());
+                    dto.setCreated_at(rating.getCreated_at());
+                    return dto;
+                })
+                .toList();
+
+        return ResponseData.res(HttpStatus.OK, "관리자용 평점 검색 성공", result);
     }
 }

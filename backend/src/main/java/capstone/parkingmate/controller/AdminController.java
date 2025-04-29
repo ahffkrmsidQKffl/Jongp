@@ -36,6 +36,12 @@ public class AdminController {
         return ResponseEntity.ok(ResponseData.res(HttpStatus.OK, "사용자 삭제 성공"));
     }
 
+    // 회원 검색
+    @GetMapping("/users/search")
+    public ResponseEntity<ResponseData<?>> search_users(@RequestParam("keyword") String keyword) {
+        return ResponseEntity.ok(adminService.search_users(keyword));
+    }
+
     // 주차장 리스트 조회
     @GetMapping("/parking-lots")
     public ResponseEntity<ResponseData<List<ParkingLotResponseDTO>>> retrieve_parknigLots() {
@@ -75,6 +81,12 @@ public class AdminController {
         return ResponseEntity.ok(ResponseData.res(HttpStatus.OK, "주차장 정보 삭제 성공"));
     }
 
+    // 주차장 정보 검색
+    @GetMapping("/parking-lots/search")
+    public ResponseEntity<ResponseData<?>> search_parkingLots(@RequestParam("keyword") String keyword) {
+        return ResponseEntity.ok(adminService.search_parkingLots(keyword));
+    }
+
     // 평점 리스트 조회
     @GetMapping("/ratings")
     public ResponseEntity<ResponseData<List<RatingResponseDTO>>> retrieve_ratings() {
@@ -92,5 +104,11 @@ public class AdminController {
         adminService.delete_rating(id);
 
         return ResponseEntity.ok(ResponseData.res(HttpStatus.OK, "평점 삭제 성공"));
+    }
+
+    // 평점 검색
+    @GetMapping("/ratings/search")
+    public ResponseEntity<ResponseData<?>> search_ratings(@RequestParam("keyword") String keyword) {
+        return ResponseEntity.ok(adminService.search_ratings(keyword));
     }
 }
