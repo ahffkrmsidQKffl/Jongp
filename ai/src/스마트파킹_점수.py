@@ -14,7 +14,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OrdinalEncoder
 from sklearn.metrics import mean_absolute_error, r2_score
 import math
-import json
+import sys, json
 
 # 1. 데이터 로드 및 전처리
 df = pd.read_csv("서울시설공단_공영주차장 시간별 주차현황_20240331.csv", encoding="cp949")
