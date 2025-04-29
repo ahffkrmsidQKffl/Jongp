@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """스마트파킹_점수.ipynb
 
@@ -130,21 +131,20 @@ def recommend_for_candidates(candidates, parking_duration=120, base_lat=37.450, 
         results[key] = temp
     return results
 
-# === 예시 입력 및 결과 출력 ===
-if __name__ == "__main__":
-
+def main():
+    # 1) stdin 에서 JSON 파싱
     data = json.load(sys.stdin)
-    candidates = data["candidates"]
+    candidates      = data["candidates"]
     parking_duration = data.get("parking_duration", 120)
-    base_lat = data.get("base_lat")
-    base_lon = data.get("base_lon")
+    base_lat        = data.get("base_lat")
+    base_lon        = data.get("base_lon")
 
-    # 추천 수행
-    res = recommend_for_candidates(candidates, parking_duration, base_lat, base_lon)
-
-    # 3) p_id 별로 4개 시나리오 점수를 하나의 dict 에 합치기
+    # 2) 추천 점수 계산
+    res = recommend_for_candidates(candidates,
+                                   parking_duration,
+                                   base_lat, base_lon)
+    # 3) p_id 별 네 가지 점수를 하나의 객체로 합치기
     combined = []
-    # 예를 들어 혼잡도우선 리스트를 기준으로 루프
     for item in res["혼잡도우선"]:
         p = item["p_id"]
         entry = {
@@ -152,11 +152,15 @@ if __name__ == "__main__":
             "주차장명": p,
             "혼잡도우선": round(item["score"], 2)
         }
-        # 나머지 시나리오 점수도 동일 p_id 에서 찾아 넣기
-        for scenario in ["거리우선", "요금우선", "리뷰우선"]:
-            score = next(x["score"] for x in res[scenario] if x["p_id"] == p)
+        for scenario in ["거리우선","요금우선","리뷰우선"]:
+            # 같은 p_id 의 점수를 찾아서 넣어준다
+            score = next(x["score"] for x in res[scenario] if x["p_id"]==p)
             entry[scenario] = round(score, 2)
         combined.append(entry)
 
-    # 4) JSON 으로 한 번에 출력
+    # 4) JSON 으로 출력
     json.dump(combined, sys.stdout, ensure_ascii=False)
+
+# === 예시 입력 및 결과 출력 ===
+if __name__ == "__main__":
+    main()
