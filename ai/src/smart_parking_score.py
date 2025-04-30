@@ -21,7 +21,7 @@ import math
 import sys, json
 
 # 1. 데이터 로드 및 전처리
-df = pd.read_csv("서울시설공단_공영주차장 시간별 주차현황_20240331.csv", encoding="cp949")
+df = pd.read_csv("서울시설공단_공영주차장_시간별_주차현황_20240331.csv", encoding="cp949")
 df["시간대"] = pd.to_datetime(df["시간대"], format="%Y-%m-%d %H", errors='coerce')
 df = df.dropna(subset=["시간대"])
 df["시간"] = df["시간대"].dt.hour
