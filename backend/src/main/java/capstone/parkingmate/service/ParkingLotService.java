@@ -53,6 +53,8 @@ public class ParkingLotService {
         // ai 모듈 호출
         List<Map<String, Object>> aiResults = aiModuleCaller.callAiModule(aiInput, requestDTO.getLatitude(), requestDTO.getLongitude());
 
+        System.out.println(aiResults);
+
         // 사용자 선호 요소 호출
         User user = userRepository.findById(user_id)
                 .orElseThrow(() -> new CustomException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
@@ -69,10 +71,21 @@ public class ParkingLotService {
         }
 
         List<ParkingLotNearbyResponseDTO> result = aiResults.stream()
-                .map(entry -> ParkingLotNearbyResponseDTO.builder()
-                        .name((String) entry.get("주차장명"))
-                        .recommendationScore((Double) entry.get(preferred))
-                        .build())
+                .map(entry -> {
+                    String name = (String) entry.get("주차장명");
+
+                    // Object 로 꺼내서 Number 로 변환
+                    Object raw = entry.get(preferred);
+                    double score = 0.0;
+                    if (raw instanceof Number) {
+                        score = ((Number) raw).doubleValue();
+                    }
+
+                    return ParkingLotNearbyResponseDTO.builder()
+                            .name(name)
+                            .recommendationScore(score)
+                            .build();
+                })
                 .sorted((a,b) -> Double.compare(b.getRecommendationScore(), a.getRecommendationScore())) // 추천점수가 높은 순서로 정렬
                 .collect(Collectors.toList());
 
