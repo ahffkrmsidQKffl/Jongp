@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import os
+import os, logging
 os.environ['CUDA_VISIBLE_DEVICES'] = ''    # GPU 사용 안 함
+logging.getLogger("xgboost").setLevel(logging.ERROR)
 # -*- coding: utf-8 -*-
 """스마트파킹_점수.ipynb
 
@@ -54,6 +55,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 best_model = XGBRegressor(n_estimators=300, max_depth=10, learning_rate=0.02, subsample=0.8, colsample_bytree=0.8,
                           tree_method='hist',           # histogram-based 알고리즘 (CPU 전용)
                           predictor='cpu_predictor',    # CPU 전용 예측기
+                          verbosity=0,   # <-- 로그 완전 끔
                           random_state=42)
 best_model.fit(X_train, y_train)
 
