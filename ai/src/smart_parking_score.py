@@ -121,11 +121,10 @@ def recommend_for_candidates(candidates, parking_duration=120, base_lat=None, ba
         fee = calculate_expected_fee(row.iloc[0] if not row.empty else {}, parking_duration)
         rev_score = np.clip(review,0,5)/5*100
         records.append({"p_id":name, "congestion_score":cong_score, "distance":dist, "fee":fee, "review_score":rev_score})
-        print(records)
+
     fees = [r["fee"] for r in records if r["fee"] is not None]; dists = [r["distance"] for r in records if r["distance"] is not None]
     min_fee,max_fee = min(fees),max(fees); min_dist,max_dist = min(dists),max(dists)
 
-    print(f"▶ fee range: {min_fee} ~ {max_fee}, dist range: {min_dist} ~ {max_dist}")
 
     scenarios = {"혼잡도우선":{"w_cong":0.8,"w_dist":0.1,"w_fee":0.05,"w_rev":0.05},
                  "거리우선":{"w_cong":0.5,"w_dist":0.3,"w_fee":0.1,"w_rev":0.1},
@@ -145,13 +144,10 @@ def recommend_for_candidates(candidates, parking_duration=120, base_lat=None, ba
 def main():
     # 1) stdin 에서 JSON 파싱
     data = json.load(sys.stdin)
-    print(data)
     candidates      = data["candidates"]
     parking_duration = data.get("parking_duration", 120)
     base_lat         = data.get("base_lat")
-    print("base_lat: ", base_lat)
     base_lon         = data.get("base_lon")
-    print("base_lon: ", base_lon)
 
     # 2) 추천 점수 계산
     res = recommend_for_candidates(candidates,
