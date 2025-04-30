@@ -138,10 +138,13 @@ def recommend_for_candidates(candidates, parking_duration=120, base_lat=None, ba
 def main():
     # 1) stdin 에서 JSON 파싱
     data = json.load(sys.stdin)
+    print(data)
     candidates      = data["candidates"]
     parking_duration = data.get("parking_duration", 120)
     base_lat         = data.get("base_lat")
+    print("base_lat: ", base_lat)
     base_lon         = data.get("base_lon")
+    print("base_lon: ", base_lon)
 
     # 2) 추천 점수 계산
     res = recommend_for_candidates(candidates,
