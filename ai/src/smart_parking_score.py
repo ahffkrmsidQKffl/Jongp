@@ -171,6 +171,13 @@ def main():
             entry[scenario] = round(score, 2)
         combined.append(entry)
 
+    # NaN → None 으로 치환
+    for entry in combined:
+        for k, v in entry.items():
+            # JSON으로 dump 되기 전, Python 객체 단계에서
+            if isinstance(v, float) and math.isnan(v):
+                entry[k] = None
+
     # 4) JSON 으로 출력
     json.dump(combined, sys.stdout, ensure_ascii=False)
     sys.stdout.flush()
