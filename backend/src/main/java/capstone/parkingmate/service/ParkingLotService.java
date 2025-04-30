@@ -50,8 +50,10 @@ public class ParkingLotService {
 
         System.out.println("aiInput = " + aiInput);
 
+        int parkingDuration = 120;
+
         // ai 모듈 호출
-        List<Map<String, Object>> aiResults = aiModuleCaller.callAiModule(aiInput, requestDTO.getLatitude(), requestDTO.getLongitude());
+        List<Map<String, Object>> aiResults = aiModuleCaller.callAiModule(aiInput, requestDTO.getLatitude(), requestDTO.getLongitude(),  parkingDuration);
 
         System.out.println(aiResults);
 

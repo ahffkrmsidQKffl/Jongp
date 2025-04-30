@@ -27,15 +27,19 @@ public class AiModuleCaller {
     ) {
         // Normalize to absolute path
         this.scriptPath = Paths.get(scriptPath).toAbsolutePath().toString();
+        System.out.println("scriptPath = " + scriptPath);
     }
 
-    public List<Map<String, Object>> callAiModule(List<Map<String, Object>> candidates, double baseLat, double baseLon) {
+    public List<Map<String, Object>> callAiModule(List<Map<String, Object>> candidates, double baseLat, double baseLon, int parkingDuration) {
 
         // 요청 데이터 준비
         Map<String, Object> payload = new HashMap<>();
         payload.put("candidates", candidates);
+        payload.put("parking_duration", parkingDuration);
         payload.put("base_lat", baseLat);
         payload.put("base_lon", baseLon);
+
+        System.out.println("payload = " + payload);
 
         ProcessBuilder builder = new ProcessBuilder("python3", "-u", scriptPath);
         builder.directory(new File("/home/t25115/Jongp/ai/src"));
