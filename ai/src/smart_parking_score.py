@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = ''    # GPU 사용 안 함
 # -*- coding: utf-8 -*-
 """스마트파킹_점수.ipynb
 
@@ -49,7 +51,10 @@ fit_columns = X.columns.tolist()
 
 # 3. 모델 학습
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-best_model = XGBRegressor(n_estimators=300, max_depth=10, learning_rate=0.02, subsample=0.8, colsample_bytree=0.8, random_state=42)
+best_model = XGBRegressor(n_estimators=300, max_depth=10, learning_rate=0.02, subsample=0.8, colsample_bytree=0.8,
+                          tree_method='hist',           # histogram-based 알고리즘 (CPU 전용)
+                          predictor='cpu_predictor',    # CPU 전용 예측기
+                          random_state=42)
 best_model.fit(X_train, y_train)
 
 # 4. 정적 정보 로드
