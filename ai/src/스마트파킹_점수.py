@@ -99,16 +99,16 @@ def predict_congestion_for_parking(parking_name, weekday, hour):
     inp[numerical_features] = scaler.transform(inp[numerical_features])
     return float(best_model.predict(inp)[0])
 
-def recommend_for_candidates(candidates, parking_duration=120, base_lat=37.450, base_lon=127.129):
+def recommend_for_candidates(candidates, parking_duration=120, base_lat=None, base_lon=None):
     records = []
     for c in candidates:
         name = c["p_id"]; review = c.get("review",0); wd = c.get("weekday",1); hr = c.get("hour",0)
         cong = predict_congestion_for_parking(name, wd, hr)
         cong_score = np.clip(100-cong, 0, 100)
         row = df_static[df_static["주차장명"] == name.strip().lower()]
-        if not row.empty:
-            lat, lon = row[["위도","경도"]].iloc[0]
-            dist = haversine_distance(base_lat, base_lon, lat, lon)
+        if not row.empty and base_lat is not None and base_lon is not None:
+            plat, plon = row[["위도","경도"]].iloc[0]
+            dist = haversine_distance(base_lat, base_lon, plat, plon)
         else:
             dist = None
         fee = calculate_expected_fee(row.iloc[0] if not row.empty else {}, parking_duration)
@@ -162,13 +162,16 @@ def main():
     data = json.load(sys.stdin)
     candidates      = data["candidates"]
     parking_duration = data.get("parking_duration", 120)
-    base_lat        = data.get("base_lat")
-    base_lon        = data.get("base_lon")
+    base_lat         = data.get("base_lat")
+    base_lon         = data.get("base_lon")
 
     # 2) 추천 점수 계산
     res = recommend_for_candidates(candidates,
                                    parking_duration,
-                                   base_lat, base_lon)
+                                   base_lat=base_lat,
+                                   base_lon=base_lon
+                                   )
+
     # 3) p_id 별 네 가지 점수를 하나의 객체로 합치기
     combined = []
     for item in res["혼잡도우선"]:
