@@ -25,6 +25,18 @@ public class ParkingLotController {
         return ResponseEntity.ok(ResponseData.res(HttpStatus.OK, "주차장 조회 성공", parkingLots));
     }
 
+    // 전체 주차장 점수 계산
+    @PostMapping("/all")
+    public ResponseEntity<ResponseData<List<ParkingLotAllResponseDTO>>> all_parking_lots(@RequestBody ParkingLotAllRequestDTO requestDTO
+            , HttpSession session) {
+
+        Long user_id = (Long) session.getAttribute("user_id");
+
+        List<ParkingLotAllResponseDTO> responseDTOS = parkingLotService.all_parking_lot(user_id, requestDTO);
+
+        return ResponseEntity.ok(ResponseData.res(HttpStatus.OK, "전체 주차장 점수 조회 성공", responseDTOS));
+    }
+
 
     // 현재 위치 기반 추천 주차장 리스트
     @PostMapping("/recommendations/nearby")

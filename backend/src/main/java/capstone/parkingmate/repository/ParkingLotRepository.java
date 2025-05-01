@@ -11,6 +11,8 @@ import java.util.List;
 @Repository
 public interface ParkingLotRepository extends JpaRepository<ParkingLot, Long> {
 
+    ParkingLot findByName(String name);
+
     // 쿼리문 개선하기!!
     @Query(
             value = "SELECT * FROM parking_lot WHERE name LIKE %:keyword% OR address LIKE %:keyword%",

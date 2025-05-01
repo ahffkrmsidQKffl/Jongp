@@ -46,6 +46,59 @@ public class ParkingLotService {
         return responseDTOS;
     }
 
+    // 전체 주차장 점수 조회
+    public List<ParkingLotAllResponseDTO> all_parking_lot(Long user_id, ParkingLotAllRequestDTO requestDTO) {
+        List<ParkingLot> parkingLots = parkingLotRepository.findAll();
+
+        List<Map<String, Object>> aiInput = parkingLots.stream()
+                .map(lot -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("p_id", lot.getName());
+                    map.put("review", lot.getAvgRating() != null ? lot.getAvgRating().getAvg_score() : 0.0);
+                    map.put("weekday", requestDTO.getWeekday());
+                    map.put("hour", requestDTO.getHour());
+                    return map;
+                })
+                .collect(Collectors.toList());
+
+        int parkingDuration = 120;
+
+        // ai 모듈 호출
+        List<Map<String, Object>> aiResults = aiModuleCaller.callAiModule(aiInput, requestDTO.getLatitude(), requestDTO.getLongitude(), parkingDuration);
+
+        // 사용자 선호 요소 호출
+        User user = userRepository.findById(user_id)
+                .orElseThrow(() -> new CustomException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+        String preferred;
+        if(user.getPreferred_factor().equals(PreferredFactor.FEE)) {
+            preferred = "요금우선";
+        } else if (user.getPreferred_factor().equals(PreferredFactor.DISTANCE)) {
+            preferred = "거리우선";
+        } else if (user.getPreferred_factor().equals(PreferredFactor.RATING)) {
+            preferred = "리뷰우선";
+        } else {
+            preferred = "혼잡도우선";
+        }
+
+        List<ParkingLotAllResponseDTO> result = aiResults.stream()
+                .map(entry -> {
+                    ParkingLot data = parkingLotRepository.findByName((String) entry.get("주차장명"));
+                    return ParkingLotAllResponseDTO.builder()
+                            .p_id(data.getP_id())
+                            .latitude(data.getLatitude())
+                            .longitude(data.getLongitude())
+                            .name((String) entry.get("주차장명"))
+                            .score((Double) entry.get(preferred))
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        System.out.println("result = " + result);
+
+        return result;
+    }
+
     // 현재 위치 기반 추천 주차장
     public List<ParkingLotNearbyResponseDTO> recommendNearby(Long user_id, ParkingLotNearbyRequestDTO requestDTO) {
 
