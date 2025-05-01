@@ -25,6 +25,27 @@ public class ParkingLotService {
     private final AiModuleCaller aiModuleCaller;
     private final UserRepository userRepository;
 
+    // 주차장 전체 조회
+    public List<ParkingLotRetrieveDTO> retrieve() {
+
+        List<ParkingLot> datas = parkingLotRepository.findAll();
+
+        List<ParkingLotRetrieveDTO> responseDTOS = new ArrayList<>();
+
+        for(ParkingLot data : datas) {
+            ParkingLotRetrieveDTO responseDTO = new ParkingLotRetrieveDTO();
+
+            responseDTO.setP_id(data.getP_id());
+            responseDTO.setName(data.getName());
+            responseDTO.setLatitude(data.getLatitude());
+            responseDTO.setLongitude(data.getLongitude());
+
+            responseDTOS.add(responseDTO);
+        }
+
+        return responseDTOS;
+    }
+
     // 현재 위치 기반 추천 주차장
     public List<ParkingLotNearbyResponseDTO> recommendNearby(Long user_id, ParkingLotNearbyRequestDTO requestDTO) {
 

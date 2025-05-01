@@ -17,6 +17,14 @@ public class ParkingLotController {
 
     private final ParkingLotService parkingLotService;
 
+    // 주차장 마커
+    @GetMapping()
+    public ResponseEntity<ResponseData<List<ParkingLotRetrieveDTO>>> retrieve() {
+        List<ParkingLotRetrieveDTO> parkingLots = parkingLotService.retrieve();
+
+        return ResponseEntity.ok(ResponseData.res(HttpStatus.OK, "주차장 조회 성공", parkingLots));
+    }
+
 
     // 현재 위치 기반 추천 주차장 리스트
     @PostMapping("/recommendations/nearby")
