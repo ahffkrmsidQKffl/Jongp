@@ -161,6 +161,7 @@ public class ParkingLotService {
                     return ParkingLotNearbyResponseDTO.builder()
                             .p_id(data.getP_id())
                             .address(data.getAddress())
+                            .fee(data.getFee())
                             .name(name)
                             .recommendationScore(score)
                             .build();

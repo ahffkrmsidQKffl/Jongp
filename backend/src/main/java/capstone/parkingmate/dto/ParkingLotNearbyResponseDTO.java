@@ -11,4 +11,5 @@ public class ParkingLotNearbyResponseDTO {
     private String name;
     private double recommendationScore;
     private String address;
+    private int fee;
 }
