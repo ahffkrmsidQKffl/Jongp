@@ -149,6 +149,7 @@ public class ParkingLotService {
         List<ParkingLotNearbyResponseDTO> result = aiResults.stream()
                 .map(entry -> {
                     String name = (String) entry.get("주차장명");
+                    ParkingLot data = parkingLotRepository.findByName(name);
 
                     // Object 로 꺼내서 Number 로 변환
                     Object raw = entry.get(preferred);
@@ -158,6 +159,7 @@ public class ParkingLotService {
                     }
 
                     return ParkingLotNearbyResponseDTO.builder()
+                            .p_id(data.getP_id())
                             .name(name)
                             .recommendationScore(score)
                             .build();

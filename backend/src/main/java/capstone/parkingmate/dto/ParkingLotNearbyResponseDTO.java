@@ -7,6 +7,7 @@ import lombok.Getter;
 @Builder
 public class ParkingLotNearbyResponseDTO {
 
+    private Long p_id;
     private String name;
     private double recommendationScore;
 }
