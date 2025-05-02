@@ -1,5 +1,6 @@
 package capstone.parkingmate.service;
 
+import capstone.parkingmate.CongestionApiParser;
 import capstone.parkingmate.dto.*;
 import capstone.parkingmate.entity.ParkingLot;
 import capstone.parkingmate.entity.User;
@@ -193,6 +194,21 @@ public class ParkingLotService {
             responseDTO.setAvg_score(0.0);
         } else {
             responseDTO.setAvg_score(data.getAvgRating().getAvg_score());
+        }
+
+        // ✅ [혼잡도 추가] 공공데이터 API 연동
+        List<CongestionDTO> congestionList = CongestionApiParser.fetchCongestionData();
+        String localName = data.getName().trim();
+
+        for (CongestionDTO congestion : congestionList) {
+            // ✅ [혼잡도 추가] " 공영주차장(시)" 제거 후 정확 일치 비교
+            String cleanedName = congestion.getName().replace(" 공영주차장(시)", "").trim();
+            if (cleanedName.equals(localName)) {
+                // ✅ [혼잡도 추가] DTO에 혼잡도 데이터 세팅
+                responseDTO.setTotal_spaces(congestion.getTotal_spaces());
+                responseDTO.setCurrent_vehicles(congestion.getCurrent_vehicles());
+                break;
+            }
         }
 
         // 로깅
