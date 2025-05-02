@@ -203,6 +203,21 @@ public class ParkingLotService {
         for (CongestionDTO congestion : congestionList) {
             // ✅ [혼잡도 추가] " 공영주차장(시)" 제거 후 정확 일치 비교
             String cleanedName = congestion.getName().replace(" 공영주차장(시)", "").trim();
+
+            // ✅ 예외 1: 종묘 ↔ 종묘주차장
+            if (localName.equals("종묘") && cleanedName.equals("종묘주차장")) {
+                responseDTO.setTotal_spaces(congestion.getTotal_spaces());
+                responseDTO.setCurrent_vehicles(congestion.getCurrent_vehicles());
+                break;
+            }
+
+            // ✅ 예외 2: 마포유수지 ↔ 마포유수지(시)
+            if (localName.equals("마포유수지") && congestion.getName().trim().equals("마포유수지(시)")) {
+                responseDTO.setTotal_spaces(congestion.getTotal_spaces());
+                responseDTO.setCurrent_vehicles(congestion.getCurrent_vehicles());
+                break;
+            }
+
             if (cleanedName.equals(localName)) {
                 // ✅ [혼잡도 추가] DTO에 혼잡도 데이터 세팅
                 responseDTO.setTotal_spaces(congestion.getTotal_spaces());
