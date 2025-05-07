@@ -38,6 +38,7 @@ const Layout = ({ setShowAddressModal, triggerNearbyRecommend, currentPath }) =>
 };
 
 function App() {
+  
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [triggerNearby, setTriggerNearby] = useState(false);
   const [currentPath, setCurrentPath] = useState(window.location.hash.replace("#", "") || "/");

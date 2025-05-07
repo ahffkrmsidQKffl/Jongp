@@ -41,7 +41,13 @@ const Ratings = () => {
 
   const handleDelete = async (rating_id) => {
     try {
-      await apiRequest("/api/ratings", "DELETE", { rating_id }, user.email);
+      // DELETE /api/ratings/{rating_id}
+      await apiRequest(
+        `/api/ratings/${rating_id}`,
+        "DELETE",
+        null,
+        user.email
+      );
       setRatings((prev) => prev.filter((r) => r.rating_id !== rating_id));
       toast.success("평점이 삭제되었습니다.");
     } catch {
@@ -51,10 +57,15 @@ const Ratings = () => {
 
   const handleUpdate = async (newScore) => {
     try {
-      await apiRequest("/api/ratings", "PATCH", {
-        rating_id: selectedRating.rating_id,
-        score: newScore,
-      }, user.email);
+      await apiRequest(
+        "/api/ratings",
+        "PATCH",
+        {
+          rating_id: selectedRating.rating_id,
+          rating: newScore
+        },
+        user.email
+      );
 
       setRatings((prev) =>
         prev.map((r) =>

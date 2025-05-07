@@ -2,30 +2,59 @@ import React, { useEffect, useState } from 'react';
 import './AdminUserList.css';
 import './AdminCommon.css';
 import UserDetailModal from '../../components/admin/UserDetailModal';
-import userData from '../../data/userData.json';
+import { apiRequest } from '../../api/api';
+import useKakaoLoader from '../../components/common/KakaoLoader'; // ✅ 추가
 
 export default function AdminUserList() {
+  const sdkLoaded = useKakaoLoader(); // ✅ 공통 훅 사용
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    setUsers(userData);
-  }, []);
+    if (sdkLoaded) fetchUsers();
+  }, [sdkLoaded]);
 
-  const handleDelete = (id) => {
-    setUsers(prev => prev.filter(user => user.id !== id));
+  useEffect(() => {
+    if (!sdkLoaded) return;
+    if (searchTerm.trim()) fetchSearch(searchTerm);
+    else fetchUsers();
+  }, [searchTerm, sdkLoaded]);
+
+  const fetchUsers = async () => {
+    try {
+      const data = await apiRequest('/admin/api/users', 'GET');
+      setUsers(data);
+    } catch (err) {
+      console.error('사용자 목록 조회 실패', err);
+    }
+  };
+
+  const fetchSearch = async (keyword) => {
+    try {
+      const encoded = encodeURIComponent(keyword);
+      const data = await apiRequest(`/admin/api/users/search?keyword=${encoded}`, 'GET');
+      setUsers(data);
+    } catch (err) {
+      console.error('사용자 검색 실패', err);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await apiRequest(`/admin/api/users/${id}`, 'DELETE');
+      fetchUsers();
+    } catch (err) {
+      console.error('사용자 삭제 실패', err);
+    }
   };
 
   const handleRefresh = () => {
-    setUsers(userData);
     setSearchTerm('');
+    fetchUsers();
   };
 
-  const filteredUsers = users.filter(user =>
-    user.nickname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  if (!sdkLoaded) return <p>카카오맵 SDK 로딩 중...</p>; // ✅ 로딩 대기 처리
 
   return (
     <div className="admin-section">
@@ -51,16 +80,16 @@ export default function AdminUserList() {
           </tr>
         </thead>
         <tbody>
-          {filteredUsers.map((user) => (
+          {users.map((user) => (
             <tr
-              key={user.id}
+              key={user.user_id}
               className="clickable-row"
               onClick={() => setSelectedUser(user)}
             >
-              <td>{user.id}</td>
+              <td>{user.user_id}</td>
               <td>{user.email}</td>
               <td>{user.nickname}</td>
-              <td>{user.joined_at}</td>
+              <td>{user.created_at?.split('T')[0] || ''}</td>
               <td>{user.preferred_factor}</td>
             </tr>
           ))}

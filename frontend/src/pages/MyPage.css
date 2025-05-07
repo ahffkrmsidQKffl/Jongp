@@ -132,3 +132,12 @@ form select {
 .mypage-button.activity:hover {
   background-color: #e0e0e0;
 }
+
+.mypage-button.delete {
+  background-color: #dc3545;
+  color: white;
+}
+
+.mypage-button.delete:hover {
+  background-color: #c82333;
+}

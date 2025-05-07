@@ -2,6 +2,7 @@ import { faAngleLeft, faRightFromBracket } from "@fortawesome/free-solid-svg-ico
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { apiRequest } from "../api/api";  // apiRequest 추가
 import "./Header.css";
 
 const Header = () => {
@@ -22,12 +23,22 @@ const Header = () => {
 
   const goBack = () => navigate(-1);
 
-  const handleLogout = () => {
-    document.cookie = "email=; max-age=0; path=/";
-    sessionStorage.removeItem("email");
-    sessionStorage.clear();
-    toast.info("로그아웃 되었습니다.");
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      // 백엔드 로그아웃 API 호출
+      await apiRequest("/api/users/logout", "POST");
+
+      // 클라이언트 측 세션/쿠키 정리
+      document.cookie = "email=; max-age=0; path=/";
+      sessionStorage.removeItem("email");
+      sessionStorage.clear();
+
+      toast.info("로그아웃 되었습니다.");
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout error:", err);
+      toast.error("로그아웃 중 오류가 발생했습니다.");
+    }
   };
 
   return (

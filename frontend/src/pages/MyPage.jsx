@@ -41,10 +41,12 @@ const MyPage = () => {
 
   const handleProfileUpdate = async () => {
     try {
-      await apiRequest("/api/users/mypage", "PATCH", {
-        nickname,
-        preferred_factor: preferred,
-      }, user.email);
+      await apiRequest(
+        "/api/users/mypage",
+        "PATCH",
+        { nickname, preferred_factor: preferred },
+        user.email
+      );
 
       toast.success("정보가 수정되었습니다.");
       setUser((prev) => ({
@@ -64,10 +66,12 @@ const MyPage = () => {
     }
 
     try {
-      await apiRequest("/api/users/password", "PATCH", {
-        current_password: currentPassword,
-        new_password: newPassword,
-      }, user.email);
+      await apiRequest(
+        "/api/users/password",
+        "PATCH",
+        { current_password: currentPassword, new_password: newPassword },
+        user.email
+      );
 
       toast.success("비밀번호가 수정되었습니다.");
       setCurrentPassword("");
@@ -76,6 +80,20 @@ const MyPage = () => {
       setIsPasswordChangeVisible(false);
     } catch (error) {
       toast.error(error.message || "비밀번호 수정 실패");
+    }
+  };
+
+  // ✅ 회원 탈퇴
+  const handleDeleteAccount = async () => {
+    try {
+      await apiRequest("/api/users", "DELETE", null, user.email);
+      toast.info("회원 탈퇴가 완료되었습니다.");
+      setUser(null);
+      document.cookie = "email=; max-age=0; path=/";
+      sessionStorage.clear();
+      navigate("/login");
+    } catch (error) {
+      toast.error(error.message || "회원 탈퇴 실패");
     }
   };
 
@@ -167,6 +185,15 @@ const MyPage = () => {
             </button>
           </div>
         )}
+
+        {/* 회원 탈퇴 버튼 */}
+        <button
+          type="button"
+          className="mypage-button delete"
+          onClick={handleDeleteAccount}
+        >
+          회원 탈퇴
+        </button>
       </form>
     </div>
   );

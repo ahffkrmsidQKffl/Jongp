@@ -1,4 +1,3 @@
-// src/pages/Home.jsx
 import { useEffect, useState, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import LocationMarker from "../components/LocationMarker";
@@ -78,6 +77,7 @@ const Home = ({ triggerNearby, clearTriggerNearby }) => {
       const options = {
         center: new window.kakao.maps.LatLng(userPosition.lat, userPosition.lng),
         level: 3,
+        maxLevel: 7,
       };
       const map = new window.kakao.maps.Map(mapRef.current, options);
       setMapInstance(map);
@@ -113,10 +113,57 @@ const Home = ({ triggerNearby, clearTriggerNearby }) => {
     }
   }, [triggerNearby, userPosition, mapInstance, locationAllowed]);
 
+  // ✅ 추가되는 외곽선 그리기용 useEffect
+useEffect(() => {
+  if (!mapInstance) return;
+
+  fetch("/seoul-outline.geojson")
+  .then((res) => res.json())
+  .then((geojson) => {
+    const geometry = geojson.geometries[0];
+    const coordsRaw = geometry.type === "Polygon"
+      ? geometry.coordinates[0]
+      : geometry.coordinates[0][0]; // MultiPolygon 대응
+
+    const coords = coordsRaw.map(
+      ([lng, lat]) => new window.kakao.maps.LatLng(lat, lng)
+    );
+
+    const polygon = new window.kakao.maps.Polygon({
+      path: coords,
+      strokeWeight: 5,
+      strokeColor: "#0047AB",
+      strokeOpacity: 0.9,
+      fillColor: "#A2D5F2",
+      fillOpacity: 0.0
+    });
+
+    polygon.setMap(mapInstance);
+  })
+  .catch((err) => {
+    console.error("서울 외곽선 GeoJSON 로드 실패:", err);
+  });
+}, [mapInstance]);
+
   const handleNearbyRecommend = async (isAuto = false) => {
     if (!userPosition || !mapInstance) return;
     try {
-      const result = await apiRequest("/api/parking-lots/recommendations/nearby", "POST", userPosition);
+      // 현재 시간 기준 weekday, hour 계산
+      const now = new Date();
+      const weekday = now.getDay();    // 0(일)~6(토)
+      const hour    = now.getHours();  // 0~23
+
+      const result = await apiRequest(
+        "/api/parking-lots/recommendations/nearby",
+        "POST",
+        {
+          latitude:  userPosition.lat,
+          longitude: userPosition.lng,
+          weekday,
+          hour
+        },
+        user.email
+      );
       mapInstance.setCenter(new window.kakao.maps.LatLng(userPosition.lat, userPosition.lng));
       mapInstance.setLevel(3);
       setRecommendedLots(result);
@@ -141,7 +188,22 @@ const Home = ({ triggerNearby, clearTriggerNearby }) => {
   const handleConfirmAddress = async () => {
     try {
       const { lat, lng, place } = confirmTarget;
-      const result = await apiRequest("/api/parking-lots/recommendations/destination", "POST", { lat, lng });
+      // 현재 시간 기준 weekday, hour 계산
+      const now = new Date();
+      const weekday = now.getDay();    // 0(일)~6(토)
+      const hour    = now.getHours();  // 0~23
+
+      const result = await apiRequest(
+        "/api/parking-lots/recommendations/destination",
+        "POST",
+        {
+          latitude:  lat,
+          longitude: lng,
+          weekday,
+          hour
+        },
+        user.email
+      );
       setRecommendedLots(result);
       setRecommendTitle(`"${place.place_name}" 근처 추천`);
       setShowRecommendedList(true);
@@ -194,6 +256,7 @@ const Home = ({ triggerNearby, clearTriggerNearby }) => {
       )}
 
       {showRecommendedList && (
+        <>
         <RecommendedListPopup
           title={recommendTitle}
           lots={recommendedLots}
@@ -208,9 +271,11 @@ const Home = ({ triggerNearby, clearTriggerNearby }) => {
           }}
           onClose={() => setShowRecommendedList(false)}
         />
+        <ScoreLegend />
+        </>
       )}
 
-      <ScoreLegend />
+
 
       <button
         className="nearby-fab"
