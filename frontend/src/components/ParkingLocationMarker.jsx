@@ -12,9 +12,17 @@ const ParkingLocationMarker = ({ map }) => {
     const fetchParking = async () => {
       try {
         const result = await apiRequest("/api/parking-lots");
+  
+        if (!Array.isArray(result.data)) {
+          console.error("❌ /api/parking-lots 응답이 배열이 아닙니다:", result.data);
+          setParkingData([]); // 안전하게 초기화
+          return;
+        }
+  
         setParkingData(result.data);
       } catch (e) {
         console.error("주차장 데이터 오류:", e.message);
+        setParkingData([]); // 네트워크 오류 시에도 안전하게 초기화
       }
     };
     fetchParking();
