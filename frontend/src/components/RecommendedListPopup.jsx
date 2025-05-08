@@ -24,7 +24,6 @@ const RecommendedListPopup = ({
   isInitial,
 }) => {
   const { user } = useContext(UserContext);
-  const preferredFactor = user?.preferred_factor?.toLowerCase() || "distance";
 
   const getDistance = (lat1, lng1, lat2, lng2) => {
     const R = 6371e3;
@@ -39,8 +38,7 @@ const RecommendedListPopup = ({
 
   const sortedLots = [...lots]
     .map((lot) => {
-      const factor = `ai_recommend_score_${preferredFactor}`;
-      const score = lot[factor] || 0;
+      const score = lot.recommendationScore || 0;
       const distance = baseLocation
         ? getDistance(
             baseLocation.lat,
@@ -87,7 +85,7 @@ const RecommendedListPopup = ({
                   </div>
                 </div>
                 <p>{lot.address}</p>
-                <p>요금: {lot.fee.toLocaleString()}원</p>
+                {lot.fee != null && <p>요금: {lot.fee.toLocaleString()}원</p>}
                 {lot.distance != null && (
                   <p>거리: {lot.distance.toLocaleString()}m</p>
                 )}

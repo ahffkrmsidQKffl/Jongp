@@ -10,17 +10,7 @@ import StarDisplay from "./StarDisplay";
 import EditRatingModal from "./EditRatingModal";
 import "./ParkingPopup.css";
 
-const getColorByScore = (score) => {
-  let red, green, blue = 0;
-  if (score <= 50) {
-    red = 255;
-    green = Math.round(score * 5.1);
-  } else {
-    red = Math.round((100 - score) * 5.1);
-    green = 255;
-  }
-  return `rgb(${red}, ${green}, ${blue})`;
-};
+
 
 const ParkingPopup = ({ parking, onClose }) => {
   const { user } = useContext(UserContext);
@@ -86,16 +76,20 @@ const ParkingPopup = ({ parking, onClose }) => {
     setIsSubmitting(true);
     try {
       if (ratingId) {
-        await apiRequest("/api/ratings", "PATCH", {
-          rating_id: ratingId,
-          score: newScore,
-        }, user.email);
+        await apiRequest(
+          "/api/ratings",
+          "PATCH",
+          { rating_id: ratingId, rating: newScore },
+          user.email
+        );
         toast.success("평점이 수정되었습니다!");
       } else {
-        const res = await apiRequest("/api/ratings", "POST", {
-          p_id,
-          score: newScore,
-        }, user.email);
+        const res = await apiRequest(
+          "/api/ratings",
+          "POST",
+          { p_id, score: newScore },
+          user.email
+        );
         setRatingId(res.rating_id);
         toast.success("평점이 등록되었습니다!");
       }
@@ -109,23 +103,18 @@ const ParkingPopup = ({ parking, onClose }) => {
   };
 
   const handleDirectionClick = () => {
-    const url = `https://map.kakao.com/link/to/${encodeURIComponent(parking.name)},${parking.latitude},${parking.longitude}`;
+    const url = `https://map.kakao.com/link/to/${encodeURIComponent(
+      parking.name
+    )},${parking.latitude},${parking.longitude}`;
     window.open(url, "_blank");
   };
 
   const factor = user?.preferred_factor?.toLowerCase();
-  const score = factor ? parking[`ai_recommend_score_${factor}`] : 0;
-  const scoreColor = getColorByScore(score);
 
   return (
     <div className="popup-overlay">
       <div className="popup-card">
         <div className="popup-top-icons">
-          {factor && (
-            <div className="score-badge" style={{ backgroundColor: scoreColor }}>
-              {score}
-            </div>
-          )}
           <button className="bookmark-toggle" onClick={toggleBookmark}>
             <FontAwesomeIcon icon={isBookmarked ? solidBookmark : regularBookmark} />
           </button>
@@ -136,7 +125,7 @@ const ParkingPopup = ({ parking, onClose }) => {
 
         <div className="info-box">
           <p><strong>요금</strong> {parking.fee.toLocaleString()}원</p>
-          <p><strong>혼잡도</strong> {parking.real_time_congestion}</p>
+          <p><strong>주차대수 현황</strong> {parking.real_time_congestion}</p>
         </div>
 
         <div className="rating-box">

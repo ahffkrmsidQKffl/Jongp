@@ -1,4 +1,5 @@
 const fs = require('fs');
+const https = require('https');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -110,6 +111,23 @@ app.post('/api/users/login', (req, res) => {
   });
 });
 
+// 로그아웃 (인증 없음)
+app.post('/api/users/logout', (req, res) => {
+  res.status(200).json({ message: '로그아웃 성공' });
+});
+
+// 회원 탈퇴 (인증 필요)
+app.delete('/api/users', authMiddleware, (req, res) => {
+  const email = req.user.email;
+  users = users.filter(u => u.email !== email);
+  bookmarks = bookmarks.filter(b => b.email !== email);
+  ratings = ratings.filter(r => r.email !== email);
+  saveJson('userData.json', users);
+  saveJson('bookmarks.json', bookmarks);
+  saveJson('ratingData.json', ratings);
+  res.status(200).json({ message: '회원 탈퇴 성공' });
+});
+
 // 마이페이지 (인증 필요)
 app.get('/api/users/mypage', authMiddleware, (req, res) => {
   const { password, ...userInfo } = req.user;
@@ -156,11 +174,22 @@ app.delete('/api/bookmarks/:p_id', authMiddleware, (req, res) => {
   res.status(200).json({ message: '북마크 삭제됨' });
 });
 
-// 평점 (인증 필요: POST, PATCH, DELETE만)
-app.get('/api/ratings', (req, res) => {
-  res.json(ratings);
+// 주차장 검색 (공개)
+app.get('/api/parking-lots/search', (req, res) => {
+  const keyword = (req.query.keyword || '').toLowerCase();
+  const result = parkingData.filter(lot =>
+    lot.name.toLowerCase().includes(keyword) ||
+    lot.address.toLowerCase().includes(keyword)
+  );
+  res.status(200).json(result);
 });
 
+// 평점 조회 (인증 필요)
+app.get('/api/ratings', authMiddleware, (req, res) => {
+  res.status(200).json(ratings);
+});
+
+// 평점 등록 (인증 필요)
 app.post('/api/ratings', authMiddleware, (req, res) => {
   const { p_id, score } = req.body;
   const exists = ratings.find(r => r.email === req.user.email && r.p_id === p_id);
@@ -171,44 +200,168 @@ app.post('/api/ratings', authMiddleware, (req, res) => {
   res.status(201).json(newRating);
 });
 
+// 평점 수정 (인증 필요)
 app.patch('/api/ratings', authMiddleware, (req, res) => {
-  const { rating_id, score } = req.body;
+  const { rating_id, rating } = req.body;
   const target = ratings.find(r => r.rating_id === rating_id && r.email === req.user.email);
   if (!target) return res.status(404).json({ message: '해당 평점을 찾을 수 없습니다.' });
-  target.score = score;
+  target.score = rating;
   saveJson('ratingData.json', ratings);
   res.status(200).json(target);
 });
 
-app.delete('/api/ratings', authMiddleware, (req, res) => {
-  const { rating_id } = req.body;
-  const index = ratings.findIndex(r => r.rating_id === rating_id && r.email === req.user.email);
+// 평점 삭제 (인증 필요)
+app.delete('/api/ratings/:rating_id', authMiddleware, (req, res) => {
+  const ratingId = parseInt(req.params.rating_id, 10);
+  const index = ratings.findIndex(r => r.rating_id === ratingId && r.email === req.user.email);
   if (index === -1) return res.status(404).json({ message: '해당 평점을 찾을 수 없습니다.' });
   ratings.splice(index, 1);
   saveJson('ratingData.json', ratings);
   res.status(200).json({ message: '평점 삭제 완료' });
 });
 
-// 추천 (공개)
-app.post('/api/parking-lots/recommendations/destination', (req, res) => {
-  const { lat, lng } = req.body;
-  const recommended = parkingData.filter(lot =>
-    Math.abs(lot.latitude - lat) < 0.1 && Math.abs(lot.longitude - lng) < 0.1
-  );
+// 추천 (인증 필요)
+app.post('/api/parking-lots/recommendations/nearby', authMiddleware, (req, res) => {
+  const { latitude, longitude, weekday, hour } = req.body;
+  const preferredFactor = req.user?.preferred_factor?.toLowerCase();
+  const scoreKey = `ai_recommend_score_${preferredFactor}`;
+
+  console.log(`📍 현재 위치 추천: 위도=${latitude}, 경도=${longitude}, 요일=${weekday}, 시간=${hour}, 요소=${preferredFactor}`);
+
+  const recommended = parkingData
+    .filter(lot =>
+      Math.abs(lot.latitude - latitude) < 0.1 &&
+      Math.abs(lot.longitude - longitude) < 0.1
+    )
+    .map(lot => ({
+      ...lot,
+      recommendationScore: lot[scoreKey] ?? 0
+    }));
+
   res.status(200).json(recommended);
 });
 
-app.post('/api/parking-lots/recommendations/nearby', (req, res) => {
-  const { lat, lng } = req.body;
-  const recommended = parkingData.filter(lot =>
-    Math.abs(lot.latitude - lat) < 0.1 && Math.abs(lot.longitude - lng) < 0.1
-  );
+app.post('/api/parking-lots/recommendations/destination', authMiddleware, (req, res) => {
+  const { latitude, longitude, weekday, hour } = req.body;
+  const preferredFactor = req.user?.preferred_factor?.toLowerCase();
+  const scoreKey = `ai_recommend_score_${preferredFactor}`;
+
+  console.log(`🗺 목적지 추천: 위도=${latitude}, 경도=${longitude}, 요일=${weekday}, 시간=${hour}, 요소=${preferredFactor}`);
+
+  const recommended = parkingData
+    .filter(lot =>
+      Math.abs(lot.latitude - latitude) < 0.1 &&
+      Math.abs(lot.longitude - longitude) < 0.1
+    )
+    .map(lot => ({
+      ...lot,
+      recommendationScore: lot[scoreKey] ?? 0
+    }));
+
   res.status(200).json(recommended);
 });
 
 // 주차장 리스트 (공개)
 app.get('/api/parking-lots', (req, res) => {
   res.status(200).json(parkingData);
+});
+
+// ========== 관리자용 API 시작 ==========
+
+// 사용자 목록 조회 (인증 생략)
+app.get('/admin/api/users', (req, res) => {
+  res.status(200).json(users);
+});
+
+// 사용자 검색
+app.get('/admin/api/users/search', (req, res) => {
+  const kw = (req.query.keyword || '').toLowerCase();
+  const result = users.filter(u =>
+    u.nickname.toLowerCase().includes(kw) ||
+    u.email.toLowerCase().includes(kw)
+  );
+  res.status(200).json(result);
+});
+
+// 사용자 삭제
+app.delete('/admin/api/users/:id', (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  users = users.filter(u => u.id !== id);
+  bookmarks = bookmarks.filter(b => b.email !== users.find(u=>u.id===id)?.email);
+  ratings = ratings.filter(r => r.email !== users.find(u=>u.id===id)?.email);
+  saveJson('userData.json', users);
+  saveJson('bookmarks.json', bookmarks);
+  saveJson('ratingData.json', ratings);
+  res.status(200).json({ message: '관리자: 사용자 삭제 완료' });
+});
+
+// 주차장 목록 조회
+app.get('/admin/api/parking-lots', (req, res) => {
+  res.status(200).json(parkingData);
+});
+
+// 주차장 검색
+app.get('/admin/api/parking-lots/search', (req, res) => {
+  const kw = (req.query.keyword || '').toLowerCase();
+  const result = parkingData.filter(p =>
+    p.name.toLowerCase().includes(kw) ||
+    p.address.toLowerCase().includes(kw)
+  );
+  res.status(200).json(result);
+});
+
+// 주차장 등록
+app.post('/admin/api/parking-lots', (req, res) => {
+  const newP = { ...req.body, p_id: Math.max(...parkingData.map(p=>p.p_id)) + 1 };
+  parkingData.push(newP);
+  saveJson('parkingData.json', parkingData);
+  res.status(201).json(newP);
+});
+
+// 주차장 수정
+app.patch('/admin/api/parking-lots', (req, res) => {
+  const { p_id, name, address, fee } = req.body;
+  const p = parkingData.find(p=>p.p_id===p_id);
+  if (!p) return res.status(404).json({ message: '주차장을 찾을 수 없습니다.' });
+  if (name) p.name = name;
+  if (address) p.address = address;
+  if (fee != null) p.fee = fee;
+  saveJson('parkingData.json', parkingData);
+  res.status(200).json(p);
+});
+
+// 주차장 삭제
+app.delete('/admin/api/parking-lots/:p_id', (req, res) => {
+  const id = parseInt(req.params.p_id, 10);
+  parkingData = parkingData.filter(p => p.p_id !== id);
+  saveJson('parkingData.json', parkingData);
+  res.status(200).json({ message: '관리자: 주차장 삭제 완료' });
+});
+
+// 평점 검색 (관리자)
+app.get('/admin/api/ratings/search', (req, res) => {
+  const kw = (req.query.keyword || '').toLowerCase();
+  const result = ratings.filter(r =>
+    r.email.toLowerCase().includes(kw)
+  );
+  res.status(200).json(result);
+});
+
+// 평점 목록 조회 (관리자용)
+app.get('/admin/api/ratings', (req, res) => {
+  res.status(200).json(ratings);
+});
+
+// 평점 삭제 (관리자용)
+app.delete('/admin/api/ratings/:rating_id', (req, res) => {
+  const ratingId = parseInt(req.params.rating_id, 10);
+  const index = ratings.findIndex(r => r.rating_id === ratingId);
+  if (index === -1) {
+    return res.status(404).json({ message: '평점을 찾을 수 없습니다.' });
+  }
+  ratings.splice(index, 1);
+  saveJson('ratingData.json', ratings);
+  res.status(200).json({ message: '관리자: 평점 삭제 완료' });
 });
 
 // 서버 시작

@@ -21,6 +21,13 @@ export default defineConfig({
           : 'http://localhost:5000',
           // : 'https://ceprj.gachon.ac.kr:60015', // 배포용 Spring 서버
         changeOrigin: true
+      },
+       // 관리자용 API 프록시
+       '/admin/api': {
+        target: isDev
+          ? 'http://localhost:5000'
+          : 'http://localhost:5000',
+        changeOrigin: true
       }
     }
   },

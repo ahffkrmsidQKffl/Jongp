@@ -34,7 +34,7 @@
     "latitude": 37.553343,
     "longitude": 126.970696,
     "fee": 2500,
-    "avg_rating": 4.0,
+    "avg_rating": 4,
     "real_time_congestion": 45,
     "ai_recommend_score_distance": 65,
     "ai_recommend_score_rating": 30,
@@ -138,5 +138,19 @@
     "ai_recommend_score_rating": 99,
     "ai_recommend_score_congestion": 18,
     "ai_recommend_score_fee": 85
+  },
+  {
+    "name": "명일역",
+    "address": "서울특별시 강동구 명일동 312-82",
+    "fee": 2500,
+    "p_id": 11
+  },
+  {
+    "name": "명일역",
+    "address": "서울 강동구 명일동 312-82",
+    "fee": 2400,
+    "latitude": "37.5512902349718",
+    "longitude": "127.143147820893",
+    "p_id": 12
   }
 ]
