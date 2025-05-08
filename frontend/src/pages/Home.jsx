@@ -114,36 +114,54 @@ const Home = ({ triggerNearby, clearTriggerNearby }) => {
   }, [triggerNearby, userPosition, mapInstance, locationAllowed]);
 
   // ✅ 추가되는 외곽선 그리기용 useEffect
-useEffect(() => {
-  if (!mapInstance) return;
-
-  fetch("/seoul-outline.geojson")
-  .then((res) => res.json())
-  .then((geojson) => {
-    const geometry = geojson.geometries[0];
-    const coordsRaw = geometry.type === "Polygon"
-      ? geometry.coordinates[0]
-      : geometry.coordinates[0][0]; // MultiPolygon 대응
-
-    const coords = coordsRaw.map(
-      ([lng, lat]) => new window.kakao.maps.LatLng(lat, lng)
-    );
-
-    const polygon = new window.kakao.maps.Polygon({
-      path: coords,
-      strokeWeight: 5,
-      strokeColor: "#0047AB",
-      strokeOpacity: 0.9,
-      fillColor: "#A2D5F2",
-      fillOpacity: 0.0
-    });
-
-    polygon.setMap(mapInstance);
-  })
-  .catch((err) => {
-    console.error("서울 외곽선 GeoJSON 로드 실패:", err);
-  });
-}, [mapInstance]);
+  useEffect(() => {
+    if (!mapInstance) return;
+  
+    fetch("/seoul-outline.geojson")
+      .then((res) => {
+        if (!res.ok) throw new Error("GeoJSON 파일 로드 실패 (status: " + res.status + ")");
+        return res.json();
+      })
+      .then((geojson) => {
+        const geometry = geojson?.geometries?.[0];
+        if (!geometry || !geometry.coordinates) {
+          console.error("❌ GeoJSON geometry 구조가 이상합니다:", geometry);
+          return;
+        }
+  
+        let coordsRaw = null;
+        if (geometry.type === "Polygon") {
+          coordsRaw = geometry.coordinates?.[0];
+        } else if (geometry.type === "MultiPolygon") {
+          coordsRaw = geometry.coordinates?.[0]?.[0];
+        }
+  
+        if (!Array.isArray(coordsRaw)) {
+          console.error("❌ coordsRaw가 배열이 아닙니다:", coordsRaw);
+          return;
+        }
+  
+        const coords = coordsRaw.map(
+          ([lng, lat]) => new window.kakao.maps.LatLng(lat, lng)
+        );
+  
+        const polygon = new window.kakao.maps.Polygon({
+          path: coords,
+          strokeWeight: 5,
+          strokeColor: "#0047AB",
+          strokeOpacity: 0.9,
+          fillColor: "#A2D5F2",
+          fillOpacity: 0.0
+        });
+  
+        polygon.setMap(mapInstance);
+      })
+      .catch((err) => {
+        console.error("서울 외곽선 GeoJSON 로드 실패:", err);
+      });
+  }, [mapInstance]);
+  
+  
 
   const handleNearbyRecommend = async (isAuto = false) => {
     if (!userPosition || !mapInstance) return;

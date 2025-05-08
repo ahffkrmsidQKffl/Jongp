@@ -21,8 +21,8 @@ const ParkingLocationMarker = ({ map }) => {
   }, []);
 
   useEffect(() => {
-    if (!map || !window.kakao || parkingData.length === 0) return;
-
+    if (!map || !window.kakao || !Array.isArray(parkingData) || parkingData.length === 0) return;
+  
     parkingData.forEach((parking) => {
       const svg = `
         <svg width="30" height="30" xmlns="http://www.w3.org/2000/svg">
@@ -44,25 +44,26 @@ const ParkingLocationMarker = ({ map }) => {
           </text>
         </svg>
       `;
-
+  
       const markerImage = new window.kakao.maps.MarkerImage(
         "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg),
         new window.kakao.maps.Size(30, 30),
         { offset: new window.kakao.maps.Point(15, 15) }
       );
-
+  
       const marker = new window.kakao.maps.Marker({
         position: new window.kakao.maps.LatLng(parking.latitude, parking.longitude),
         image: markerImage,
         map,
         clickable: true,
       });
-
+  
       window.kakao.maps.event.addListener(marker, "click", () => {
         setSelectedParking(parking);
       });
     });
   }, [map, parkingData]);
+  
 
   return (
     <>
