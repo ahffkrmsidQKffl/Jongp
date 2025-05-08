@@ -19,7 +19,6 @@ jobs:
           cd ~/Jongp
           git pull origin main
           cd frontend
-          npm install
           npm run build
           cp -r dist/* ../backend/src/main/resources/static/
           cd ../backend
