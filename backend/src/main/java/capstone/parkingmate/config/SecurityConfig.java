@@ -64,7 +64,9 @@ public class SecurityConfig {
                 .requestMatchers(
                         "/",
                         "/index.html",
-                        "/static/**",
+                        "/vite.svg",
+                        "/seoul-outline.geojson",
+                        "/mockServiceWorker.js",
                         "/assets/**",
                         "/favicon.ico"
                 ).permitAll()
