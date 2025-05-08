@@ -6,6 +6,9 @@ const base = process.env.VITE_BASE_URL || '/';
 const isDev = process.env.NODE_ENV !== 'production';
 
 export default defineConfig({
+  build: {
+    sourcemap: true
+  },
   base: '/',
   plugins: [react()],
   server: {
