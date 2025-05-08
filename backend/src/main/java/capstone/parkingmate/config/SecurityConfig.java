@@ -60,9 +60,19 @@ public class SecurityConfig {
 
         // HTTP 요청 권한 관련
         http.authorizeHttpRequests(auth -> auth
-                //다음 요청에 관해서는 모든 권한 허용
+                // 🔓 여기에 정적 리소스 접근 허용 추가
+                .requestMatchers(
+                        "/",
+                        "/index.html",
+                        "/static/**",
+                        "/assets/**",
+                        "/favicon.ico"
+                ).permitAll()
+
+                // 🔓 이미 허용한 API들
                 .requestMatchers("/api/users/register", "/api/users/login", "/api/users/logout").permitAll()
-                //그 외 모든 요청에 대해서는 인증 필요
+
+                // 🔐 나머지 모든 요청은 인증 필요
                 .anyRequest().authenticated()
         );
 
