@@ -13,11 +13,11 @@ export default function UserDetailModal({ user, onClose, onDelete }) {
       if (!user) return;
       try {
         const keyword = encodeURIComponent(user.nickname);
-        const data = await apiRequest(
+        const res = await apiRequest(
           `/admin/api/ratings/search?keyword=${keyword}`,
           'GET'
         );
-        setRatings(data);
+        setRatings(res.data);
       } catch (err) {
         console.error('평점 조회 실패', err);
       }
@@ -32,8 +32,13 @@ export default function UserDetailModal({ user, onClose, onDelete }) {
 
   const handleDelete = async () => {
     if (window.confirm(`정말 "${user.nickname}" 회원을 삭제하시겠습니까?`)) {
-      await onDelete(user.user_id);
-      onClose();
+      try {
+        await apiRequest(`/admin/api/users/${user.user_id}`, 'DELETE');
+        onDelete(user.user_id); // 상위에서 리스트 갱신하는 함수
+        onClose(); // 모달 닫기
+      } catch (err) {
+        console.error("사용자 삭제 실패", err);
+      }
     }
   };
 

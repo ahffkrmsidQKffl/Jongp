@@ -21,8 +21,8 @@ const BookmarkList = () => {
         apiRequest("/api/bookmarks", "GET", null, user?.email),
         apiRequest("/api/parking-lots"),
       ]);
-      setBookmarks(bm);
-      setParkingLots(lots);
+      setBookmarks(bm.data);
+      setParkingLots(lots.data);
     };
     fetchData();
   }, []);
@@ -34,7 +34,7 @@ const BookmarkList = () => {
     try {
       const encoded = encodeURIComponent(searchTerm);
       const result = await apiRequest(`/api/parking-lots/search?keyword=${encoded}`);
-      setSearchResults(result);
+      setSearchResults(result.data);
     } catch (err) {
       console.error("검색 실패", err);
     }

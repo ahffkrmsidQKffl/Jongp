@@ -10,5 +10,11 @@
     "email": "asd@asd.com",
     "p_id": 4,
     "score": 1.5
+  },
+  {
+    "rating_id": 8,
+    "email": "asd@asd.com",
+    "p_id": 2,
+    "score": 3
   }
 ]

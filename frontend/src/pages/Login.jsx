@@ -27,15 +27,15 @@ export default function Login({ onLoginRedirect }) {
 
   const handleLogin = async () => {
     try {
-      const data = await apiRequest("/api/users/login", "POST", {
+      const res = await apiRequest("/api/users/login", "POST", {
         email,
         password,
       });
 
       setUser({
         email,
-        nickname: data.nickname,
-        preferred_factor: data.preferred_factor,
+        nickname: res.data.nickname,
+        preferred_factor: res.data.preferred_factor,
       });
 
       if (autoLogin) {

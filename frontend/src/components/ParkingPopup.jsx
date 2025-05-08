@@ -5,12 +5,9 @@ import { toast } from "react-toastify";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBookmark as solidBookmark } from "@fortawesome/free-solid-svg-icons";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
-import { faPen } from "@fortawesome/free-solid-svg-icons";
 import StarDisplay from "./StarDisplay";
 import EditRatingModal from "./EditRatingModal";
 import "./ParkingPopup.css";
-
-
 
 const ParkingPopup = ({ parking, onClose }) => {
   const { user } = useContext(UserContext);
@@ -27,15 +24,15 @@ const ParkingPopup = ({ parking, onClose }) => {
       if (!user) return;
 
       try {
-        const bookmarks = await apiRequest("/api/bookmarks", "GET", null, user.email);
-        setIsBookmarked(bookmarks.some((b) => b.p_id === p_id));
+        const bookmarksRes = await apiRequest("/api/bookmarks", "GET", null, user.email);
+        setIsBookmarked(bookmarksRes.data.some((b) => b.p_id === p_id));
       } catch (err) {
         console.error("북마크 조회 실패", err);
       }
 
       try {
-        const ratings = await apiRequest("/api/ratings", "GET", null, user.email);
-        const myRating = ratings.find((r) => r.p_id === p_id && r.email === user.email);
+        const ratingsRes = await apiRequest("/api/ratings", "GET", null, user.email);
+        const myRating = ratingsRes.data.find((r) => r.p_id === p_id && r.email === user.email);
         if (myRating) {
           setRating(myRating.score);
           setRatingId(myRating.rating_id);
@@ -84,16 +81,23 @@ const ParkingPopup = ({ parking, onClose }) => {
         );
         toast.success("평점이 수정되었습니다!");
       } else {
-        const res = await apiRequest(
+        await apiRequest(
           "/api/ratings",
           "POST",
           { p_id, score: newScore },
           user.email
         );
-        setRatingId(res.rating_id);
         toast.success("평점이 등록되었습니다!");
       }
-      setRating(newScore);
+
+      // 최신 평점 다시 불러와서 반영
+      const updated = await apiRequest("/api/ratings", "GET", null, user.email);
+      const myRating = updated.data.find((r) => r.p_id === p_id && r.email === user.email);
+      if (myRating) {
+        setRating(myRating.score);
+        setRatingId(myRating.rating_id);
+      }
+
       setShowEditModal(false);
     } catch (err) {
       toast.error("평점 처리 중 오류가 발생했습니다.");

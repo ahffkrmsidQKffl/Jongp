@@ -24,12 +24,12 @@ const Ratings = () => {
   useEffect(() => {
     const fetchRatings = async () => {
       try {
-        const [userRatings, allLots] = await Promise.all([
+        const [userRatingsRes, allLotsRes] = await Promise.all([
           apiRequest("/api/ratings", "GET", null, user.email),
           apiRequest("/api/parking-lots")
         ]);
-        setRatings(userRatings.filter(r => r.email === user.email)); // 혹시 전체 올 경우 대비
-        setParkingLots(allLots);
+        setRatings(userRatingsRes.data.filter(r => r.email === user.email));
+        setParkingLots(allLotsRes.data);
       } catch (err) {
         toast.error("평점 정보를 불러오지 못했습니다.");
       }

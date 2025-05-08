@@ -13,34 +13,33 @@ export default function AdminRatingList() {
 
   // 전체 평점 + 사용자/주차장 정보 불러오기
   const fetchRatings = async () => {
-    setLoading(true);
     try {
-      // 평점, 사용자, 주차장 데이터를 동시에 가져옴
-      const [rawRatings, users, lots] = await Promise.all([
-        apiRequest('/admin/api/ratings', 'GET'),
-        apiRequest('/admin/api/users', 'GET'),
-        apiRequest('/admin/api/parking-lots', 'GET'),
+      const [rawRatingsRes, usersRes, lotsRes] = await Promise.all([
+        apiRequest("/admin/api/ratings"),
+        apiRequest("/admin/api/users"),
+        apiRequest("/admin/api/parking-lots")
       ]);
-
-      // 사용자 닉네임, 주차장 이름, 등록일 병합
+  
+      const rawRatings = rawRatingsRes.data;
+      const users = usersRes.data;
+      const parkingLots = lotsRes.data;
+  
       const enriched = rawRatings.map((r) => {
         const user = users.find((u) => u.email === r.email);
-        const lot  = lots.find((p) => p.p_id === r.p_id);
+        const lot = parkingLots.find((p) => p.p_id === r.p_id);
         return {
           ...r,
-          nickname:     user?.nickname     || '',
-          parking_name: lot?.name         || '',
-          rated_at:     r.createdAt       || '',  // 백엔드에서 createdAt 필드를 보내줄 경우
+          user_nickname: user?.nickname || "알 수 없음",
+          parking_name: lot?.name || "알 수 없음"
         };
       });
-
+  
       setRatings(enriched);
     } catch (err) {
-      console.error('평점 목록 조회 실패', err);
-    } finally {
-      setLoading(false);
+      console.error("데이터 로드 실패", err);
     }
   };
+  
 
   useEffect(() => {
     fetchRatings();

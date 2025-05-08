@@ -11,8 +11,8 @@ const ParkingLocationMarker = ({ map }) => {
   useEffect(() => {
     const fetchParking = async () => {
       try {
-        const data = await apiRequest("/api/parking-lots");
-        setParkingData(data);
+        const result = await apiRequest("/api/parking-lots");
+        setParkingData(result.data);
       } catch (e) {
         console.error("주차장 데이터 오류:", e.message);
       }

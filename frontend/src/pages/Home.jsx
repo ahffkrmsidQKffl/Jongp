@@ -166,7 +166,7 @@ useEffect(() => {
       );
       mapInstance.setCenter(new window.kakao.maps.LatLng(userPosition.lat, userPosition.lng));
       mapInstance.setLevel(3);
-      setRecommendedLots(result);
+      setRecommendedLots(result.data);
       setRecommendTitle("현재 위치 기반 추천");
       setBaseLocation(userPosition);
       fetchCurrentAddress(userPosition);
@@ -204,7 +204,7 @@ useEffect(() => {
         },
         user.email
       );
-      setRecommendedLots(result);
+      setRecommendedLots(result.data);
       setRecommendTitle(`"${place.place_name}" 근처 추천`);
       setShowRecommendedList(true);
       setBaseLocation({ lat, lng });

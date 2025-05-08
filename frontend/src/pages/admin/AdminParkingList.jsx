@@ -24,22 +24,23 @@ export default function AdminParkingList() {
 
   const fetchParkings = async () => {
     try {
-      const data = await apiRequest('/admin/api/parking-lots', 'GET');
-      setParkings(data);
+      const res = await apiRequest('/admin/api/parking-lots', 'GET');
+      setParkings(res.data);
     } catch (err) {
       console.error('주차장 목록 조회 실패', err);
     }
   };
-
+  
   const fetchSearch = async (keyword) => {
     try {
       const encoded = encodeURIComponent(keyword);
-      const data = await apiRequest(`/admin/api/parking-lots/search?keyword=${encoded}`, 'GET');
-      setParkings(data);
+      const res = await apiRequest(`/admin/api/parking-lots/search?keyword=${encoded}`, 'GET');
+      setParkings(res.data);
     } catch (err) {
       console.error('주차장 검색 실패', err);
     }
   };
+  
 
   const handleOpenCreate = () => {
     setModalMode('create');

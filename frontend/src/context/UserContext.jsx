@@ -20,7 +20,7 @@ export const UserProvider = ({ children }) => {
         // 배포 모드: 서버에 인증된 사용자 요청
         try {
           const res = await apiRequest("/api/users/mypage", "GET");
-          setUser(res);
+          setUser(res.data);
         } catch (err) {
           console.warn("로그인 상태 아님 (서버 기준)");
           setUser(null);

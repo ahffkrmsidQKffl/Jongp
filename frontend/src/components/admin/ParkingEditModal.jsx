@@ -43,7 +43,7 @@ export default function ParkingEditModal({ mode = 'create', data = {}, onClose, 
 
   const handleSubmit = async () => {
     if (!form.name || !form.address || form.latitude == null || form.longitude == null) {
-      alert('이름, 주소, 위도/경도는 필수 입력 항목입니다.');
+      alert('이름, 주소는 필수 입력 항목입니다.');
       return;
     }
   

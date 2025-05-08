@@ -23,30 +23,25 @@ export default function AdminUserList() {
 
   const fetchUsers = async () => {
     try {
-      const data = await apiRequest('/admin/api/users', 'GET');
-      setUsers(data);
+      const res = await apiRequest('/admin/api/users', 'GET');
+      setUsers(res.data);
     } catch (err) {
       console.error('사용자 목록 조회 실패', err);
     }
   };
-
+  
   const fetchSearch = async (keyword) => {
     try {
       const encoded = encodeURIComponent(keyword);
-      const data = await apiRequest(`/admin/api/users/search?keyword=${encoded}`, 'GET');
-      setUsers(data);
+      const res = await apiRequest(`/admin/api/users/search?keyword=${encoded}`, 'GET');
+      setUsers(res.data);
     } catch (err) {
       console.error('사용자 검색 실패', err);
     }
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await apiRequest(`/admin/api/users/${id}`, 'DELETE');
-      fetchUsers();
-    } catch (err) {
-      console.error('사용자 삭제 실패', err);
-    }
+  const handleDelete = (id) => {
+    setUsers((prev) => prev.filter((u) => u.user_id !== id));
   };
 
   const handleRefresh = () => {

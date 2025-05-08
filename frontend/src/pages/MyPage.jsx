@@ -28,9 +28,9 @@ const MyPage = () => {
     const fetchUserInfo = async () => {
       try {
         const res = await apiRequest("/api/users/mypage", "GET", null, user.email);
-        setNickname(res.nickname);
-        setPreferred(res.preferred_factor);
-        setUser(res);
+        setNickname(res.data.nickname);
+        setPreferred(res.data.preferred_factor);
+        setUser(res.data);
       } catch (err) {
         toast.error("로그인이 필요합니다.");
         navigate("/login");
