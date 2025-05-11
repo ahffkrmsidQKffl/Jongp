@@ -115,11 +115,7 @@ def main():
         {"p_id":"용산주차빌딩","review":4.9,"weekday":3,"hour":14}
     ],"parking_duration":120,"base_lat":37.450,"base_lon":127.129}
     res=recommend(data["candidates"],data.get("parking_duration",120),data.get("base_lat"),data.get("base_lon"))
-    print("주차장명\t혼잡도우선\t거리우선\t요금우선\t리뷰우선")
-    for item in res["혼잡도우선"]:
-        pid=item["p_id"]
-        scores={k: next(x["score"] for x in res[k] if x["p_id"]==pid) for k in res}
-        print(f"{pid}\t{scores['혼잡도우선']:.2f}\t{scores['거리우선']:.2f}\t{scores['요금우선']:.2f}\t{scores['리뷰우선']:.2f}")
-    json.dump([{"p_id":i["p_id"], **{k:round(next(x["score"] for x in res[k] if x["p_id"]==i["p_id"]),2) for k in res}} for i in res["혼잡도우선"]], sys.stdout, ensure_ascii=False, indent=2)
+
+    json.dump([{"p_id":i["p_id"],"주차장명": item["p_id"], **{k:round(next(x["score"] for x in res[k] if x["p_id"]==i["p_id"]),2) for k in res}} for i in res["혼잡도우선"]], sys.stdout, ensure_ascii=False, indent=2)
 
 if __name__=="__main__": main()
