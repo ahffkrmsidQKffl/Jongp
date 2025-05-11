@@ -116,6 +116,6 @@ def main():
     ],"parking_duration":120,"base_lat":37.450,"base_lon":127.129}
     res=recommend(data["candidates"],data.get("parking_duration",120),data.get("base_lat"),data.get("base_lon"))
 
-    json.dump([{"p_id":i["p_id"],"주차장명": item["p_id"], **{k:round(next(x["score"] for x in res[k] if x["p_id"]==i["p_id"]),2) for k in res}} for i in res["혼잡도우선"]], sys.stdout, ensure_ascii=False, indent=2)
+    json.dump([{"p_id":i["p_id"],"주차장명": i["p_id"], **{k:round(next(x["score"] for x in res[k] if x["p_id"]==i["p_id"]),2) for k in res}} for i in res["혼잡도우선"]], sys.stdout, ensure_ascii=False, indent=2)
 
 if __name__=="__main__": main()
