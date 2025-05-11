@@ -7,6 +7,9 @@ import math
 import pandas as pd
 import numpy as np
 import joblib
+import warnings, logging
+warnings.filterwarnings("ignore")
+logging.getLogger("xgboost").setLevel(logging.ERROR)
 
 # 시간별 주차현황 데이터 로드·전처리 (학습과 동일)
 df = pd.read_csv("서울시설공단_공영주차장_시간별_주차현황_20240331.csv", encoding="cp949")
