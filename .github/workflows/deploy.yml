@@ -22,6 +22,7 @@ jobs:
           git clean -fd
           git pull origin main
           cd frontend
+          mkdir -p ../backend/src/main/resources/static/
           cp -r dist/* ../backend/src/main/resources/static/
           cd ../backend
           ./gradlew build
