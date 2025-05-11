@@ -25,6 +25,7 @@ jobs:
           mkdir -p ../backend/src/main/resources/static/
           cp -r dist/* ../backend/src/main/resources/static/
           cd ../backend
+          chmod +x ./gradlew
           ./gradlew build
           PIDS=$(ps -ef | grep 'parkingmate-0.0.1-SNAPSHOT.jar' | grep -v grep | awk '{print $2}')
           for PID in $PIDS; do
