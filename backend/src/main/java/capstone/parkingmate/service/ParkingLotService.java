@@ -207,21 +207,29 @@ public class ParkingLotService {
         String localName = data.getName().trim();
 
         Integer currentVehicles = null;
+        Integer totalSpaces = null;
+
         for (CongestionDTO congestion : congestionList) {
             String cleanedName = congestion.getName().replace(" 공영주차장(시)", "").trim();
 
             if (cleanedName.equals(localName)
                     || (localName.equals("종묘") && cleanedName.equals("종묘주차장"))
                     || (localName.equals("마포유수지") && congestion.getName().trim().equals("마포유수지(시)"))) {
+
                 currentVehicles = congestion.getCurrent_vehicles();
+                totalSpaces = congestion.getTotal_spaces(); // 일단 실시간 API 기준
+
                 break;
             }
         }
         responseDTO.setCurrent_vehicles(currentVehicles != null ? currentVehicles : 0);
 
-        // ✅ 4. 총 주차면수 - CSV에서 가져오기
+        // ✅ 보정 로직: 총 주차면수가 1이라면 → CSV 기반 보정값으로 덮어쓰기
         Map<String, Integer> totalMap = loadTotalSpacesFromCsv();
-        responseDTO.setTotal_spaces(totalMap.getOrDefault(localName, 0));
+        if (totalSpaces == null || totalSpaces == 1) {
+            totalSpaces = totalMap.getOrDefault(localName, 0);
+        }
+        responseDTO.setTotal_spaces(totalSpaces);
 
         log.info("200 : 정상 처리, 주차장 {} 상세정보 성공", p_id);
         return responseDTO;
