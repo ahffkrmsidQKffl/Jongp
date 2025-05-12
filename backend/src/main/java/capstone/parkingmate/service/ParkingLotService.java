@@ -214,7 +214,11 @@ public class ParkingLotService {
 
             if (cleanedName.equals(localName)
                     || (localName.equals("종묘") && cleanedName.equals("종묘주차장"))
-                    || (localName.equals("마포유수지") && congestion.getName().trim().equals("마포유수지(시)"))) {
+                    || (localName.equals("마포유수지") && congestion.getName().trim().equals("마포유수지(시)"))
+                    || (localName.equals("명일동") && congestion.getName().trim().equals("명일파출소 공영주차장(시)"))
+                    || (localName.equals("적선동") && congestion.getName().trim().equals("적선동 주차장(시)"))
+                    || (localName.equals("파미에(반포천)") && congestion.getName().trim().equals("반포천 공영주차장(파미에)(시)"))
+            ) {
 
                 currentVehicles = congestion.getCurrent_vehicles();
                 totalSpaces = congestion.getTotal_spaces(); // 일단 실시간 API 기준
