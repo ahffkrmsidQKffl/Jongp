@@ -17,6 +17,11 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -175,14 +180,14 @@ public class ParkingLotService {
         return result;
     }
 
-    // 주차장 상세정보
+    //주차장 상세 정보 조회
     public DetailResponseDTO detail(String p_id) {
 
-        // 주차장 데이터 가져오기
+        // 1. 주차장 DB 정보 조회
         ParkingLot data = parkingLotRepository.findById(Long.valueOf(p_id))
-                .orElseThrow(() -> new CustomException("주차장을 찾을 수 없습니다.", HttpStatus.NOT_FOUND) );
-        
-        // 응답 객체 생성
+                .orElseThrow(() -> new CustomException("주차장을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+        // 2. 기본 정보 세팅
         DetailResponseDTO responseDTO = new DetailResponseDTO();
         responseDTO.setP_id(data.getP_id());
         responseDTO.setName(data.getName());
@@ -190,45 +195,35 @@ public class ParkingLotService {
         responseDTO.setFee(data.getFee());
         responseDTO.setLatitude(data.getLatitude());
         responseDTO.setLongitude(data.getLongitude());
-        if(data.getAvgRating() == null) {
+
+        if (data.getAvgRating() == null) {
             responseDTO.setAvg_score(0.0);
         } else {
             responseDTO.setAvg_score(data.getAvgRating().getAvg_score());
         }
 
-        // ✅ [혼잡도 추가] 공공데이터 API 연동
+        // ✅ 3. 혼잡도 정보 - 실시간 API
         List<CongestionDTO> congestionList = CongestionApiParser.fetchCongestionData();
         String localName = data.getName().trim();
 
+        Integer currentVehicles = null;
         for (CongestionDTO congestion : congestionList) {
-            // ✅ [혼잡도 추가] " 공영주차장(시)" 제거 후 정확 일치 비교
             String cleanedName = congestion.getName().replace(" 공영주차장(시)", "").trim();
 
-            // ✅ 예외 1: 종묘 ↔ 종묘주차장
-            if (localName.equals("종묘") && cleanedName.equals("종묘주차장")) {
-                responseDTO.setTotal_spaces(congestion.getTotal_spaces());
-                responseDTO.setCurrent_vehicles(congestion.getCurrent_vehicles());
-                break;
-            }
-
-            // ✅ 예외 2: 마포유수지 ↔ 마포유수지(시)
-            if (localName.equals("마포유수지") && congestion.getName().trim().equals("마포유수지(시)")) {
-                responseDTO.setTotal_spaces(congestion.getTotal_spaces());
-                responseDTO.setCurrent_vehicles(congestion.getCurrent_vehicles());
-                break;
-            }
-
-            if (cleanedName.equals(localName)) {
-                // ✅ [혼잡도 추가] DTO에 혼잡도 데이터 세팅
-                responseDTO.setTotal_spaces(congestion.getTotal_spaces());
-                responseDTO.setCurrent_vehicles(congestion.getCurrent_vehicles());
+            if (cleanedName.equals(localName)
+                    || (localName.equals("종묘") && cleanedName.equals("종묘주차장"))
+                    || (localName.equals("마포유수지") && congestion.getName().trim().equals("마포유수지(시)"))) {
+                currentVehicles = congestion.getCurrent_vehicles();
                 break;
             }
         }
+        responseDTO.setCurrent_vehicles(currentVehicles != null ? currentVehicles : 0);
 
-        // 로깅
+        // ✅ 4. 총 주차면수 - CSV에서 가져오기
+        Map<String, Integer> totalMap = loadTotalSpacesFromCsv();
+        responseDTO.setTotal_spaces(totalMap.getOrDefault(localName, 0));
+
         log.info("200 : 정상 처리, 주차장 {} 상세정보 성공", p_id);
-        
         return responseDTO;
     }
 
@@ -260,4 +255,35 @@ public class ParkingLotService {
 
         return responseDTOS;
     }
+
+    // CSV에서 주차장명 → 총 주차면수 매핑 정보를 읽어오는 메서드
+    private Map<String, Integer> loadTotalSpacesFromCsv() {
+        Map<String, Integer> result = new HashMap<>();
+        try {
+            // ✅ resources 폴더에 있는 파일 로드
+            InputStream is = getClass().getClassLoader().getResourceAsStream("parking_capacity_grouped.csv");
+            if (is == null) {
+                throw new FileNotFoundException("CSV 파일을 찾을 수 없습니다.");
+            }
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+
+            String line;
+            br.readLine(); // 헤더 건너뜀
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",", -1);
+                if (parts.length >= 3) {
+                    String name = parts[1].trim(); // 주차장명
+                    int totalSpaces = (int) Double.parseDouble(parts[2].trim()); // 총 주차면수
+                    result.put(name, totalSpaces);
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
 }
