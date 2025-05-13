@@ -19,6 +19,7 @@ df["시간"] = df["시간대"].dt.hour
 df["요일"] = df["시간대"].dt.dayofweek
 df["주차장명"] = df["주차장명"].str.strip().str.lower()
 df["혼잡도(%)"] = ((df["입차대수"] - df["출차대수"]) / df["주차면수"] * 100).clip(0,100)
+
 # lag features 생성
 lags = [(7*24, "지난주_혼잡도"), (14*24, "지지난주_혼잡도"), (21*24, "지지지난주_혼잡도")]
 for lag, col in lags:
@@ -38,6 +39,10 @@ model       = joblib.load("model.joblib")
 # 데이터
 df_static = pd.read_csv("서울시_공영주차장_최종.csv", encoding="cp949")
 df_static["주차장명"] = df_static["주차장명"].str.strip().str.lower()
+
+#요금 예외처리
+df_static["기본 주차 요금"].fillna(df_static["기본 주차 요금"].mean(), inplace=True)
+df_static["추가 단위 요금"].fillna(df_static["추가 단위 요금"].mean(), inplace=True)
 
 # 헬퍼 함수 정의
 def haversine(lat1, lon1, lat2, lon2):
