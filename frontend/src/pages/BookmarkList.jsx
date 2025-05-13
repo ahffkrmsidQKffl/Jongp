@@ -9,37 +9,39 @@ import "./BookmarkList.css";
 
 const BookmarkList = () => {
   const { user } = useContext(UserContext);
-  const [bookmarks, setBookmarks] = useState([]);
-  const [parkingLots, setParkingLots] = useState([]);
-  const [searchResults, setSearchResults] = useState([]);
+  const [bookmarks, setBookmarks] = useState([]);        // 북마크 목록: {p_id, name, address, fee, avg_rating}[]
+  const [searchResults, setSearchResults] = useState([]); // 검색 결과: parking-lots API 반환 형태
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
+  // 북마크 목록을 서버에서 불러오는 함수
+  const fetchBookmarks = async () => {
+    try {
+      const res = await apiRequest("/api/bookmarks", "GET", null, user?.email);
+      setBookmarks(res.data);
+    } catch (err) {
+      console.error("북마크 조회 실패", err);
+      toast.error("북마크를 불러오지 못했습니다.");
+    }
+  };
+
+  // 초기 로드 및 user.email 변경 시 북마크 FETCH
   useEffect(() => {
-    const fetchData = async () => {
-      const [bm, lots] = await Promise.all([
-        apiRequest("/api/bookmarks", "GET", null, user?.email),
-        apiRequest("/api/parking-lots"),
-      ]);
-      setBookmarks(bm.data);
-      setParkingLots(lots.data);
-    };
-    fetchData();
-  }, []);
+    if (user?.email) fetchBookmarks();
+  }, [user?.email]);
 
-  const getLotDetails = (p_id) => parkingLots.find((lot) => lot.p_id === p_id);
-
+  // 검색
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
     try {
       const encoded = encodeURIComponent(searchTerm);
-      const result = await apiRequest(`/api/parking-lots/search?keyword=${encoded}`);
-      setSearchResults(result.data);
+      const res = await apiRequest(`/api/parking-lots/search?keyword=${encoded}`);
+      setSearchResults(res.data);
     } catch (err) {
       console.error("검색 실패", err);
+      toast.error("검색 중 오류가 발생했습니다.");
     }
   };
-
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -47,78 +49,82 @@ const BookmarkList = () => {
     }
   };
 
+  // 북마크 삭제
   const handleDelete = async (p_id) => {
     try {
       await apiRequest(`/api/bookmarks/${p_id}`, "DELETE", null, user?.email);
-      setBookmarks((prev) => prev.filter((lot) => lot.p_id !== p_id));
       toast.success("북마크가 삭제되었습니다.");
-    } catch {
-      toast.error("삭제 실패");
+      await fetchBookmarks();
+    } catch (err) {
+      console.error("삭제 실패", err);
+      toast.error(err.message || "삭제에 실패했습니다.");
     }
   };
 
+  // 북마크 추가
   const handleAdd = async (lot) => {
     try {
       await apiRequest("/api/bookmarks", "POST", { p_id: lot.p_id }, user?.email);
-      setBookmarks((prev) => [...prev, { p_id: lot.p_id }]);
       toast.success("북마크가 추가되었습니다.");
-    } catch {
-      toast.error("추가 실패");
+      await fetchBookmarks();
+    } catch (err) {
+      console.error("추가 실패", err);
+      toast.error("추가에 실패했습니다.");
     }
   };
 
+  // 클릭하면 홈으로 이동하며 p_id 전달
   const handleClickCard = (lot) => {
-    sessionStorage.setItem("targetParking", JSON.stringify(lot));
-    navigate("/home");
+    navigate("/home", { state: { targetParkingId: lot.p_id } });
   };
 
-  const isBookmarked = (p_id) => bookmarks.some((b) => b.p_id === p_id);
+  // 렌더링
+  const renderCard = (lot, isSearch = false) => (
+    <li
+      key={lot.p_id}
+      className="bookmark-card"
+      onClick={() => !isSearch && handleClickCard(lot)}
+    >
+      <div className="card-header">
+        <h3>{lot.name}</h3>
+        {isSearch ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAdd(lot);
+            }}
+            className="add-btn"
+          >
+            <FontAwesomeIcon icon={faPlus} />
+          </button>
+        ) : (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(lot.p_id);
+            }}
+            className="delete-btn"
+          >
+            <FontAwesomeIcon icon={faTrashAlt} />
+          </button>
+        )}
+      </div>
+      <p className="lot-address">{lot.address}</p>
+      <div className="lot-info-group">
+        <span>
+          요금:{" "}
+          {lot.fee != null
+            ? `${lot.fee.toLocaleString()}원`
+            : "정보 없음"}
+        </span>
+        <span>
+          평점: {lot.avg_rating != null ? lot.avg_rating.toFixed(1) : "0.0"}
+        </span>
+      </div>
+    </li>
+  );
 
-  const getColorByScore = (score) => {
-    let red, green, blue = 0;
-    if (score <= 50) {
-      red = 255;
-      green = Math.round(score * 5.1);
-    } else {
-      red = Math.round((100 - score) * 5.1);
-      green = 255;
-    }
-    return `rgb(${red}, ${green}, ${blue})`;
-  };
-
-  const renderCard = (lot, isSearch = false) => {
-    const scoreKey = `ai_recommend_score_${user.preferred_factor?.toLowerCase()}`;
-    const score = lot[scoreKey] || 0;
-    const scoreColor = getColorByScore(score);
-
-    return (
-      <li key={lot.p_id} className="bookmark-card" onClick={() => !isSearch && handleClickCard(lot)}>
-        <div className="card-header">
-          <h3>{lot.name}</h3>
-          {isSearch ? (
-            <button onClick={(e) => { e.stopPropagation(); handleAdd(lot); }} className="add-btn">
-              <FontAwesomeIcon icon={faPlus} />
-            </button>
-          ) : (
-            <button onClick={(e) => { e.stopPropagation(); handleDelete(lot.p_id); }} className="delete-btn">
-              <FontAwesomeIcon icon={faTrashAlt} />
-            </button>
-          )}
-        </div>
-        <p className="lot-address">{lot.address}</p>
-        <div className="lot-info-group">
-          <span>요금: {lot.fee.toLocaleString()}원</span>
-          <span>혼잡도: {lot.real_time_congestion}</span>
-          <span>평점: {lot.avg_rating?.toFixed(1) || "0.0"}</span>
-        </div>
-      </li>
-    );
-  };
-
-  const mergedBookmarks = bookmarks
-    .map((b) => getLotDetails(b.p_id))
-    .filter(Boolean); // undefined 제거
-
+  // bookmarked list is just bookmarks[]
   return (
     <div className="bookmark-list-container">
       <h2>내 북마크</h2>
@@ -140,19 +146,17 @@ const BookmarkList = () => {
       {searchResults.length > 0 && (
         <ul className="search-results">
           {searchResults
-            .filter((lot) => !isBookmarked(lot.p_id))
+            .filter((lot) => !bookmarks.some((b) => b.p_id === lot.p_id))
             .map((lot) => renderCard(lot, true))}
         </ul>
       )}
 
       <hr />
 
-      {mergedBookmarks.length === 0 ? (
+      {bookmarks.length === 0 ? (
         <p className="no-bookmarks">북마크된 주차장이 없습니다.</p>
       ) : (
-        <ul>
-          {mergedBookmarks.map((lot) => renderCard(lot))}
-        </ul>
+        <ul>{bookmarks.map((lot) => renderCard(lot))}</ul>
       )}
     </div>
   );

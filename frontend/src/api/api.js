@@ -3,7 +3,7 @@ export async function apiRequest(endpoint, method = 'GET', data = null, userEmai
     'Content-Type': 'application/json',
   };
 
-  // 👉 개발 모드일 때만 사용자 이메일 헤더 추가
+  // 개발 모드일 때만 x-user-email 헤더 추가
   if (process.env.NODE_ENV === 'development' && userEmail) {
     headers['x-user-email'] = userEmail;
   }
@@ -11,10 +11,11 @@ export async function apiRequest(endpoint, method = 'GET', data = null, userEmai
   const options = {
     method,
     headers,
+    credentials: 'include',   // 세션 쿠키 항상 포함
     ...(data && { body: JSON.stringify(data) }),
   };
 
-  const response = await fetch(`${endpoint}`, options);
+  const response = await fetch(endpoint, options);
   const result = await response.json();
 
   if (!response.ok) {

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import LocationMarker from "../components/LocationMarker";
 import ParkingLocationMarker from "../components/ParkingLocationMarker";
 import ParkingPopup from "../components/ParkingPopup";
@@ -16,6 +16,7 @@ import "./Home.css";
 
 const Home = ({ triggerNearby, clearTriggerNearby }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const mapRef = useRef(null);
   const { user } = useContext(UserContext);
 
@@ -160,6 +161,27 @@ const Home = ({ triggerNearby, clearTriggerNearby }) => {
         console.error("서울 외곽선 GeoJSON 로드 실패:", err);
       });
   }, [mapInstance]);
+
+  useEffect(() => {
+    const targetId = location.state?.targetParkingId;
+    if (targetId != null && mapInstance) {
+      apiRequest(`/api/parking-lots/${targetId}`)
+        .then((res) => {
+          const detail = res.data;
+          // 1) 지도 센터링
+          const moveLatLng = new window.kakao.maps.LatLng(detail.latitude, detail.longitude);
+          mapInstance.setCenter(moveLatLng);
+          // 2) 팝업 열기
+          setSelectedParking(detail);
+          // 3) 한번만 실행되도록 state 초기화
+          navigate(location.pathname, { replace: true, state: {} });
+        })
+        .catch((err) => {
+          console.error("주차장 상세 조회 실패", err);
+          toast.error("목표 주차장 정보를 불러오지 못했습니다.");
+        });
+    }
+  }, [location.state, mapInstance, navigate, location.pathname]);
   
   
 
@@ -261,7 +283,9 @@ const Home = ({ triggerNearby, clearTriggerNearby }) => {
 
       {mapInstance && userPosition && <LocationMarker map={mapInstance} position={userPosition} />}
       {mapInstance && <ParkingLocationMarker map={mapInstance} setSelectedParking={setSelectedParking} />}
-      {selectedParking && <ParkingPopup parking={selectedParking} onClose={() => setSelectedParking(null)} />}
+      {selectedParking && (
+        <ParkingPopup parking={selectedParking} onClose={() => setSelectedParking(null)} />
+      )}
 
       <AddressSearchBar onSelect={handleSelectAddress} />
 

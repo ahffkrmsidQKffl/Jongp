@@ -13,6 +13,7 @@ export default function AdminRatingList() {
 
   // 전체 평점 + 사용자/주차장 정보 불러오기
   const fetchRatings = async () => {
+    setLoading(true);
     try {
       const [rawRatingsRes, usersRes, lotsRes] = await Promise.all([
         apiRequest("/admin/api/ratings"),
@@ -24,23 +25,30 @@ export default function AdminRatingList() {
       const users = usersRes.data;
       const parkingLots = lotsRes.data;
   
+      // 필요한 필드 매핑
       const enriched = rawRatings.map((r) => {
-        const user = users.find((u) => u.email === r.email);
-        const lot = parkingLots.find((p) => p.p_id === r.p_id);
+        // r.user_name, r.p_name, r.rating_id, r.score, r.created_at
+        const user = users.find((u) => u.email === r.user_name);
+        const lot = parkingLots.find((p) => p.name === r.p_name);
         return {
-          ...r,
-          user_nickname: user?.nickname || "알 수 없음",
-          parking_name: lot?.name || "알 수 없음"
+          rating_id: r.rating_id,
+          user_name: r.user_name,
+          parking_name: r.p_name,
+          score: r.score,
+          rated_at: r.created_at,
+          user_nickname: user?.nickname || r.user_name,
+          parking_id: lot?.p_id || null
         };
       });
   
       setRatings(enriched);
     } catch (err) {
       console.error("데이터 로드 실패", err);
+    } finally {
+      setLoading(false);
     }
   };
   
-
   useEffect(() => {
     fetchRatings();
   }, []);
@@ -61,9 +69,9 @@ export default function AdminRatingList() {
     fetchRatings();
   };
 
-  // 안전하게 toLowerCase 호출
+  // 검색: user_nickname 또는 parking_name
   const filteredRatings = ratings.filter((r) => {
-    const nick = (r.nickname     || '').toLowerCase();
+    const nick = (r.user_nickname || '').toLowerCase();
     const park = (r.parking_name || '').toLowerCase();
     const kw   = searchTerm.toLowerCase();
     return nick.includes(kw) || park.includes(kw);
@@ -104,10 +112,10 @@ export default function AdminRatingList() {
             {filteredRatings.map((r) => (
               <tr key={r.rating_id}>
                 <td>{r.rating_id}</td>
-                <td>{r.nickname}</td>
+                <td>{r.user_nickname}</td>
                 <td>{r.parking_name}</td>
-                <td>{r.score}</td>
-                <td>{r.rated_at}</td>
+                <td>{r.score.toFixed(1)}</td>
+                <td>{r.rated_at.split('T')[0]}</td>
                 <td>
                   <button
                     className="admin-btn danger"

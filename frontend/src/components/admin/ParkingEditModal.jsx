@@ -11,7 +11,6 @@ export default function ParkingEditModal({ mode = 'create', data = {}, onClose, 
     address: '',
     fee: '',
     avg_rating: '',
-    real_time_congestion: '',
     latitude: null,
     longitude: null
   });
@@ -25,7 +24,6 @@ export default function ParkingEditModal({ mode = 'create', data = {}, onClose, 
         address: data.address || '',
         fee: data.fee || '',
         avg_rating: data.avg_rating || '',
-        real_time_congestion: data.real_time_congestion || '',
         latitude: data.latitude || null,
         longitude: data.longitude || null
       });
@@ -46,7 +44,7 @@ export default function ParkingEditModal({ mode = 'create', data = {}, onClose, 
       alert('이름, 주소는 필수 입력 항목입니다.');
       return;
     }
-  
+
     try {
       const payload = {
         name: form.name.trim(),
@@ -55,7 +53,7 @@ export default function ParkingEditModal({ mode = 'create', data = {}, onClose, 
         latitude: form.latitude,
         longitude: form.longitude
       };
-  
+
       if (mode === 'create') {
         const newItem = await apiRequest('/admin/api/parking-lots', 'POST', payload);
         onSubmit(newItem);
@@ -66,7 +64,7 @@ export default function ParkingEditModal({ mode = 'create', data = {}, onClose, 
         });
         onSubmit(updated);
       }
-  
+
       onClose();
     } catch (err) {
       console.error('주차장 저장 실패', err);
@@ -117,10 +115,6 @@ export default function ParkingEditModal({ mode = 'create', data = {}, onClose, 
           <label>
             평점
             <input name="avg_rating" type="number" value={form.avg_rating} disabled />
-          </label>
-          <label>
-            혼잡도
-            <input name="real_time_congestion" type="number" value={form.real_time_congestion} disabled />
           </label>
 
           <div className="modal-footer">

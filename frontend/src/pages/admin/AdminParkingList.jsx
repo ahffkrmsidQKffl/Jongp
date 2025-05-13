@@ -3,10 +3,10 @@ import './AdminParkingList.css';
 import './AdminCommon.css';
 import ParkingEditModal from '../../components/admin/ParkingEditModal';
 import { apiRequest } from '../../api/api';
-import useKakaoLoader from '../../components/common/KakaoLoader'; // ✅ 추가
+import useKakaoLoader from '../../components/common/KakaoLoader';
 
 export default function AdminParkingList() {
-  const sdkLoaded = useKakaoLoader(); // ✅ 공통 훅 사용
+  const sdkLoaded = useKakaoLoader();
   const [parkings, setParkings] = useState([]);
   const [modalMode, setModalMode] = useState(null);
   const [selectedParking, setSelectedParking] = useState(null);
@@ -30,7 +30,7 @@ export default function AdminParkingList() {
       console.error('주차장 목록 조회 실패', err);
     }
   };
-  
+
   const fetchSearch = async (keyword) => {
     try {
       const encoded = encodeURIComponent(keyword);
@@ -40,7 +40,6 @@ export default function AdminParkingList() {
       console.error('주차장 검색 실패', err);
     }
   };
-  
 
   const handleOpenCreate = () => {
     setModalMode('create');
@@ -69,7 +68,7 @@ export default function AdminParkingList() {
     p.address.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (!sdkLoaded) return <p>카카오맵 SDK 로딩 중...</p>; // ✅ 로딩 대기 처리
+  if (!sdkLoaded) return <p>카카오맵 SDK 로딩 중...</p>;
 
   return (
     <div className="admin-section">
@@ -88,14 +87,17 @@ export default function AdminParkingList() {
       <table className="admin-table">
         <thead>
           <tr>
-            <th>ID</th><th>이름</th><th>주소</th><th>요금</th><th>평점</th><th>혼잡도</th>
+            <th>ID</th><th>이름</th><th>주소</th><th>요금</th><th>평점</th>
           </tr>
         </thead>
         <tbody>
           {filteredParkings.map((p) => (
             <tr key={p.p_id} className="clickable-row" onClick={() => handleOpenEdit(p)}>
-              <td>{p.p_id}</td><td>{p.name}</td><td>{p.address}</td><td>{p.fee}원</td>
-              <td>{p.avg_rating}</td><td>{p.real_time_congestion}%</td>
+              <td>{p.p_id}</td>
+              <td>{p.name}</td>
+              <td>{p.address}</td>
+              <td>{p.fee.toLocaleString()}원</td>
+              <td>{p.avg_rating}</td>
             </tr>
           ))}
         </tbody>
