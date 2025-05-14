@@ -94,28 +94,32 @@ def predict_congestion(name, weekday, hour):
 
 def recommend(candidates, duration=120, lat0=None, lon0=None):
     raw=[]
+
+    # 실시간 대상 주차장 이름 목록
+    realtime_names = set(df_static_b["주차장명"].str.strip().str.lower().unique())
+
     for c in candidates:
         name,rev,wd,hr = c["p_id"], c.get("review",0), c.get("weekday",1), c.get("hour",0)
         print(f"[INFO] 후보 처리 시작: {name} (weekday={wd}, hour={hr})", file=sys.stderr)
 
-        # 혼잡도 분기 기준 수정... pid가 주차장 이름이었을 줄이야...
-        if "congestion" in c:
+        # 혼잡도 분기 기준 수정... pid가 주차장 이름이었을 줄이야..... 아참 api는 모든 주차장의 혼잡도 불러왔지...
+        # + 정적 정보 분기도 한 번에 진행
+        name_normalized = name.strip().lower()
+        is_realtime = "congestion" in c and name_normalized in realtime_names
+
+        if is_realtime:
             cong = c["congestion"]
-            print(f"[DEBUG] 혼잡도 예측 방식: 입력값 사용 → {cong:.2f}", file=sys.stderr)
+            print(f"[DEBUG] 혼잡도 예측 방식: 실시간 입력값 사용 → {cong:.2f}", file=sys.stderr)
+            row = df_static_b[df_static_b["주차장명"] == name_normalized]
+            print(f"[DEBUG] 사용된 정적 파일: df_static_b", file=sys.stderr)
         else:
             cong = predict_congestion(name, wd, hr)
             print(f"[DEBUG] 혼잡도 예측 방식: AI 예측 → {cong:.2f}", file=sys.stderr)
+            row = df_static_a[df_static_a["주차장명"] == name_normalized]
+            print(f"[DEBUG] 사용된 정적 파일: df_static_a", file=sys.stderr)
 
         cs = np.clip(100-cong, 0, 100)
         print(f"[DEBUG] 혼잡도 점수 (가용도): {cs:.2f}", file=sys.stderr)
-
-        # 정적 정보 분기
-        if "congestion" in c:
-            row = df_static_b[df_static_b["주차장명"]==name.lower()]
-            print(f"[DEBUG] 사용된 정적 파일: df_static_b", file=sys.stderr)
-        else:
-            row = df_static_a[df_static_a["주차장명"]==name.lower()]
-            print(f"[DEBUG] 사용된 정적 파일: df_static_a", file=sys.stderr)
 
         if not row.empty and lat0 is not None and lon0 is not None:
             lat,lon = row[["위도","경도"]].iloc[0]

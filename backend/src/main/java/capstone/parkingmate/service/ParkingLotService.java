@@ -84,6 +84,12 @@ public class ParkingLotService {
             }
         }
 
+        // ✅ 실시간 혼잡도 대상 p_id Set 생성
+        Set<Long> realtimePidSet = realtimeList.stream()
+                .map(CongestionDTO::getP_id)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
         // AI 입력 구성
         List<Map<String, Object>> aiInput = parkingLots.stream()
                 .map(lot -> {
@@ -93,19 +99,20 @@ public class ParkingLotService {
                     map.put("weekday", requestDTO.getWeekday());
                     map.put("hour", requestDTO.getHour());
 
-                    // 실시간 혼잡도 존재 시 포함
-                    Optional<CongestionDTO> matched = realtimeList.stream()
-                            .filter(dto -> dto.getP_id() != null && dto.getP_id().equals(lot.getP_id()))
-                            .findFirst();
+                    if (realtimePidSet.contains(lot.getP_id())) {
+                        Optional<CongestionDTO> matched = realtimeList.stream()
+                                .filter(dto -> dto.getP_id().equals(lot.getP_id()))
+                                .findFirst();
 
-                    matched.ifPresent(dto -> {
-                        int total = dto.getTotal_spaces();
-                        int current = dto.getCurrent_vehicles();
-                        if (total > 0) {
-                            double congestion = Math.min(100.0, current * 100.0 / total);
-                            map.put("congestion", congestion);
-                        }
-                    });
+                        matched.ifPresent(dto -> {
+                            int total = dto.getTotal_spaces();
+                            int current = dto.getCurrent_vehicles();
+                            if (total > 0) {
+                                double congestion = Math.min(100.0, current * 100.0 / total);
+                                map.put("congestion", congestion);
+                            }
+                        });
+                    }
 
                     return map;
                 })
@@ -184,6 +191,11 @@ public class ParkingLotService {
             }
         }
 
+        Set<Long> realtimePidSet = realtimeList.stream()
+                .map(CongestionDTO::getP_id)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
         // AI 입력 구성
         List<Map<String, Object>> aiInput = nearbyLots.stream()
                 .map(lot -> {
@@ -193,19 +205,20 @@ public class ParkingLotService {
                     map.put("weekday", requestDTO.getWeekday());
                     map.put("hour", requestDTO.getHour());
 
-                    // 실시간 데이터 적용을 위한 기준 설정
-                    Optional<CongestionDTO> matched = realtimeList.stream()
-                            .filter(dto -> dto.getP_id() != null && dto.getP_id().equals(lot.getP_id()))
-                            .findFirst();
+                    if (realtimePidSet.contains(lot.getP_id())) {
+                        Optional<CongestionDTO> matched = realtimeList.stream()
+                                .filter(dto -> dto.getP_id().equals(lot.getP_id()))
+                                .findFirst();
 
-                    matched.ifPresent(dto -> {
-                        int total = dto.getTotal_spaces();
-                        int current = dto.getCurrent_vehicles();
-                        if (total > 0) {
-                            double congestion = Math.min(100.0, current * 100.0 / total);
-                            map.put("congestion", congestion);
-                        }
-                    });
+                        matched.ifPresent(dto -> {
+                            int total = dto.getTotal_spaces();
+                            int current = dto.getCurrent_vehicles();
+                            if (total > 0) {
+                                double congestion = Math.min(100.0, current * 100.0 / total);
+                                map.put("congestion", congestion);
+                            }
+                        });
+                    }
 
                     return map;
                 })
