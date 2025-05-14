@@ -161,8 +161,10 @@ public class ParkingLotService {
                     ParkingLot data = parkingLotRepository.findByName(name);
 
                     // 현재 위치 - 주차장 사이 거리
-                    double dist = haversine(baseLat, baseLon,
+                    double rawDist = haversine(baseLat, baseLon,
                             data.getLatitude(), data.getLongitude());
+                    // 소수점 첫째 자리까지 반올림
+                    double dist = Math.round(rawDist * 10.0) / 10.0;
 
                     // Object 로 꺼내서 Number 로 변환
                     Object raw = entry.get(preferred);
