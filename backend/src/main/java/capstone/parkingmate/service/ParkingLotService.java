@@ -73,10 +73,14 @@ public class ParkingLotService {
         Map<String, Long> nameToPid = parkingLots.stream()
                 .collect(Collectors.toMap(ParkingLot::getName, ParkingLot::getP_id));
         for (CongestionDTO dto : realtimeList) {
-            String normalized = normalizeToLocalName(dto.getName());
+            String originalName = dto.getName();
+            String normalized = normalizeToLocalName(originalName);
             Long pid = nameToPid.get(normalized);
+
             if (pid != null) {
                 dto.setP_id(pid);
+            } else {
+                System.out.println("[WARN] 혼잡도 이름 매핑 실패 → 원본: " + originalName + " / 정제 후: " + normalized);
             }
         }
 
@@ -169,10 +173,14 @@ public class ParkingLotService {
 
         // 혼잡도 DTO에 p_id 세팅
         for (CongestionDTO dto : realtimeList) {
-            String normalized = normalizeToLocalName(dto.getName());
+            String originalName = dto.getName();
+            String normalized = normalizeToLocalName(originalName);
             Long pid = nameToPid.get(normalized);
+
             if (pid != null) {
                 dto.setP_id(pid);
+            } else {
+                System.out.println("[WARN] 혼잡도 이름 매핑 실패 → 원본: " + originalName + " / 정제 후: " + normalized);
             }
         }
 
