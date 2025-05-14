@@ -47,7 +47,7 @@ public class User {
     private List<Bookmark> bookmarks;
 
     // 사용자의 평점 목록
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Rating> ratings;
 
     // 엔티티가 처음 저장될 때 실행
