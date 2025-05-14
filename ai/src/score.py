@@ -58,12 +58,24 @@ def calculate_fee(row, duration):
     t0   = row.get("기본 주차 시간(분 단위)",0) or 0
     extra= row.get("추가 단위 요금",0) or 0
     dt   = row.get("추가 단위 시간(분 단위)",5) or 5
-    cap  = row.get("일 최대 요금", base) or base
+    cap  = row.get("일 최대 요금", None)
+
     if duration <= t0:
         return base
+
     over  = duration - t0
     units = math.ceil(over / dt)
-    return min(base + units * extra, cap)
+    total = base + units * extra
+
+    # 일최대요금이 명시되었고, 0보다 크다면 제한 적용
+    if cap is not None and not pd.isna(cap) and cap > 0:
+        return min(total, cap)
+
+    # cap이 0인데 base/extra 둘 중 하나라도 존재 → 무시
+    if cap == 0 and (base > 0 or extra > 0):
+        return total
+
+    return total  # default
 
 def predict_congestion(name, weekday, hour):
     wd     = (weekday - 1) % 7
