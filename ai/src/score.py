@@ -38,7 +38,7 @@ model       = joblib.load("model.joblib")
 
 # 정적 데이터: 두 개 로드 및 요금 예외 처리
 df_static_a = pd.read_csv("서울시_공영주차장_최종.csv", encoding="cp949")
-df_static_b = pd.read_csv("전처리_완료_실시간_주차장.csv", encoding="utf-8")
+df_static_b = pd.read_csv("전처리_완료_실시간_주차장.csv", encoding="cp949")
 for df_s in [df_static_a, df_static_b]:
     df_s["주차장명"] = df_s["주차장명"].str.strip().str.lower()
     df_s["기본 주차 요금"].fillna(df_s["기본 주차 요금"].mean(), inplace=True)
@@ -85,20 +85,11 @@ def recommend(candidates, duration=120, lat0=None, lon0=None):
     for c in candidates:
         name,rev,wd,hr = c["p_id"], c.get("review",0), c.get("weekday",1), c.get("hour",0)
 
-        print(f"처리 중: {name} ({wd=}, {hr=})", file=sys.stderr)
-
-        try:
-            # 혼잡도 분기
-            if str(name).isdigit() and int(name) >= 110 and "congestion" in c:
-                cong = c["congestion"]
-                print(f"실시간 혼잡도 사용: {cong}", file=sys.stderr)
-            else:
-                cong = predict_congestion(name, wd, hr)
-                print(f"예측 혼잡도 사용: {cong}", file=sys.stderr)
-        except Exception as e:
-            print(f"혼잡도 계산 실패 ({name}): {e}", file=sys.stderr)
-            cong = 100  # 혼잡도 최대치 처리 (임시 보정)
-
+        # 혼잡도 분기
+        if str(name).isdigit() and int(name) >= 110 and "congestion" in c:
+            cong = c["congestion"]
+        else:
+            cong = predict_congestion(name, wd, hr)
         cs = np.clip(100-cong,0,100)
 
         # 정적 정보 분기
@@ -107,19 +98,12 @@ def recommend(candidates, duration=120, lat0=None, lon0=None):
         else:
             row = df_static_a[df_static_a["주차장명"]==name.lower()]
 
-        print(f"정적 데이터 매칭: {name} → {len(row)}건", file=sys.stderr)
-
-        try:
-            if not row.empty and lat0 is not None and lon0 is not None:
-                lat,lon = row[["위도","경도"]].iloc[0]
-                dist    = haversine(lat0,lon0,lat,lon)
-            else:
-                dist    = 0
-            fee    = calculate_fee(row.iloc[0] if not row.empty else {}, duration)
-        except Exception as e:
-            print(f"거리/요금 계산 실패 ({name}): {e}", file=sys.stderr)
-            dist, fee = 0, 0
-
+        if not row.empty and lat0 is not None and lon0 is not None:
+            lat,lon = row[["위도","경도"]].iloc[0]
+            dist    = haversine(lat0,lon0,lat,lon)
+        else:
+            dist    = 0
+        fee    = calculate_fee(row.iloc[0] if not row.empty else {}, duration)
         rs     = np.clip(rev,0,5)/5*100
         raw.append({"p_id":name,"cs":cs,"dist":dist,"fee":fee,"rs":rs})
 
@@ -143,29 +127,15 @@ def recommend(candidates, duration=120, lat0=None, lon0=None):
 
 # 출력 + JSON 리턴
 def main():
-    try:
-        data=json.load(sys.stdin)
-        print("Received input:", data, file=sys.stderr)
+    try: data=json.load(sys.stdin)
         #예시 데이터
-    except Exception as e:
-        print("JSON parsing error:", str(e), file=sys.stderr)
-        return  # 에러 발생 시 아예 종료
+    except: data={"candidates":[
+        {"p_id":"복정역","review":4.2,"weekday":3,"hour":14},
+        {"p_id":"볕우물","review":3.5,"weekday":3,"hour":14},
+        {"p_id":"용산주차빌딩","review":4.9,"weekday":3,"hour":14}
+    ],"parking_duration":120,"base_lat":37.450,"base_lon":127.129}
+    res=recommend(data["candidates"],data.get("parking_duration",120),data.get("base_lat"),data.get("base_lon"))
 
-    res = recommend(data["candidates"], data.get("parking_duration",120), data.get("base_lat"), data.get("base_lon"))
+    json.dump([{"p_id":i["p_id"],"주차장명": i["p_id"], **{k:round(next(x["score"] for x in res[k] if x["p_id"]==i["p_id"]),2) for k in res}} for i in res["혼잡도우선"]], sys.stdout, ensure_ascii=False, indent=2)
 
-    json.dump(
-        [
-            {
-                "p_id": i["p_id"],
-                "주차장명": i["p_id"],
-                **{k: round(next(x["score"] for x in res[k] if x["p_id"] == i["p_id"]), 2) for k in res}
-            }
-            for i in res["혼잡도우선"]
-        ],
-        sys.stdout,
-        ensure_ascii=False,
-        indent=2
-    )
-
-if __name__ == "__main__":
-    main()
+if __name__=="__main__": main()

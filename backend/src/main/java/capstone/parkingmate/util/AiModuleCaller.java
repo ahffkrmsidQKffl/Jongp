@@ -63,7 +63,7 @@ public class AiModuleCaller {
                          new InputStreamReader(is, StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    output.append(line).append("\n");
+                    output.append(line);
                 }
             }
 
