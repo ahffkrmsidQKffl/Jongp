@@ -86,18 +86,19 @@ def recommend(candidates, duration=120, lat0=None, lon0=None):
         name,rev,wd,hr = c["p_id"], c.get("review",0), c.get("weekday",1), c.get("hour",0)
         print(f"[INFO] 후보 처리 시작: {name} (weekday={wd}, hour={hr})", file=sys.stderr)
 
-        # 혼잡도 분기
-        if str(name).isdigit() and int(name) >= 110 and "congestion" in c:
+        # 혼잡도 분기 기준 수정... pid가 주차장 이름이었을 줄이야...
+        if "congestion" in c:
             cong = c["congestion"]
             print(f"[DEBUG] 혼잡도 예측 방식: 입력값 사용 → {cong:.2f}", file=sys.stderr)
         else:
             cong = predict_congestion(name, wd, hr)
             print(f"[DEBUG] 혼잡도 예측 방식: AI 예측 → {cong:.2f}", file=sys.stderr)
-        cs = np.clip(100-cong,0,100)
+
+        cs = np.clip(100-cong, 0, 100)
         print(f"[DEBUG] 혼잡도 점수 (가용도): {cs:.2f}", file=sys.stderr)
 
         # 정적 정보 분기
-        if str(name).isdigit() and int(name) >= 110:
+        if "congestion" in c:
             row = df_static_b[df_static_b["주차장명"]==name.lower()]
             print(f"[DEBUG] 사용된 정적 파일: df_static_b", file=sys.stderr)
         else:

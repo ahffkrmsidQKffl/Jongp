@@ -68,22 +68,19 @@ public class ParkingLotService {
     public List<ParkingLotAllResponseDTO> all_parking_lot(Long user_id, ParkingLotAllRequestDTO requestDTO) {
         List<ParkingLot> parkingLots = parkingLotRepository.findAll();
 
-        // 이름을 key, p_id를 value로 한 Map 생성
+        // 혼잡도 리스트 불러오기 및 이름 정제 후 p_id 부여
+        List<CongestionDTO> realtimeList = CongestionApiParser.fetchCongestionData();
         Map<String, Long> nameToPid = parkingLots.stream()
                 .collect(Collectors.toMap(ParkingLot::getName, ParkingLot::getP_id));
-
-        // 혼잡도 리스트 불러오기
-        List<CongestionDTO> realtimeList = CongestionApiParser.fetchCongestionData();
-
-        // 각 DTO에 p_id 세팅
         for (CongestionDTO dto : realtimeList) {
             String normalized = normalizeToLocalName(dto.getName());
-            Long pid = nameToPid.get(normalized);  // 이름으로 찾은 p_id
+            Long pid = nameToPid.get(normalized);
             if (pid != null) {
-                dto.setP_id(pid);  // 혼잡도 DTO에 p_id를 채워넣기
+                dto.setP_id(pid);
             }
         }
 
+        // AI 입력 구성
         List<Map<String, Object>> aiInput = parkingLots.stream()
                 .map(lot -> {
                     Map<String, Object> map = new HashMap<>();
@@ -92,28 +89,19 @@ public class ParkingLotService {
                     map.put("weekday", requestDTO.getWeekday());
                     map.put("hour", requestDTO.getHour());
 
-                    try {
-                        int pIdNumeric = lot.getP_id().intValue();
-                        if (pIdNumeric >= 110) {
-                            Optional<CongestionDTO> matched = realtimeList.stream()
-                                    .filter(dto -> {
-                                        String normalized = normalizeToLocalName(dto.getName());
-                                        return normalized.equals(lot.getName().trim());
-                                    })
-                                    .findFirst();
+                    // 실시간 혼잡도 존재 시 포함
+                    Optional<CongestionDTO> matched = realtimeList.stream()
+                            .filter(dto -> dto.getP_id() != null && dto.getP_id().equals(lot.getP_id()))
+                            .findFirst();
 
-                            matched.ifPresent(dto -> {
-                                int total = dto.getTotal_spaces();
-                                int current = dto.getCurrent_vehicles();
-                                if (total > 0) {
-                                    double congestion = Math.min(100.0, current * 100.0 / total);
-                                    map.put("congestion", congestion);
-                                }
-                            });
+                    matched.ifPresent(dto -> {
+                        int total = dto.getTotal_spaces();
+                        int current = dto.getCurrent_vehicles();
+                        if (total > 0) {
+                            double congestion = Math.min(100.0, current * 100.0 / total);
+                            map.put("congestion", congestion);
                         }
-                    } catch (NumberFormatException ignore) {
-                        // 문자열 p_id는 무시
-                    }
+                    });
 
                     return map;
                 })
@@ -197,21 +185,19 @@ public class ParkingLotService {
                     map.put("weekday", requestDTO.getWeekday());
                     map.put("hour", requestDTO.getHour());
 
-                    // 실시간 데이터 적용 (p_id 기준)
-                    if (lot.getP_id() >= 110) {
-                        Optional<CongestionDTO> matched = realtimeList.stream()
-                                .filter(dto -> dto.getP_id() != null && dto.getP_id().equals(lot.getP_id()))
-                                .findFirst();
+                    // 실시간 데이터 적용을 위한 기준 설정
+                    Optional<CongestionDTO> matched = realtimeList.stream()
+                            .filter(dto -> dto.getP_id() != null && dto.getP_id().equals(lot.getP_id()))
+                            .findFirst();
 
-                        matched.ifPresent(dto -> {
-                            int total = dto.getTotal_spaces();
-                            int current = dto.getCurrent_vehicles();
-                            if (total > 0) {
-                                double congestion = Math.min(100.0, current * 100.0 / total);
-                                map.put("congestion", congestion);
-                            }
-                        });
-                    }
+                    matched.ifPresent(dto -> {
+                        int total = dto.getTotal_spaces();
+                        int current = dto.getCurrent_vehicles();
+                        if (total > 0) {
+                            double congestion = Math.min(100.0, current * 100.0 / total);
+                            map.put("congestion", congestion);
+                        }
+                    });
 
                     return map;
                 })
