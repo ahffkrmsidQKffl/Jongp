@@ -21,6 +21,12 @@ jobs:
           git reset --hard origin/main
           git clean -fd
           git pull origin main
+
+          # 🔽 모델 학습 자동화 추가 (ai/src/train.py 실행)
+          cd ai/src
+          python3 train.py
+          cd ../../
+          
           cd frontend
           mkdir -p ../backend/src/main/resources/static/
           cp -r dist/* ../backend/src/main/resources/static/
