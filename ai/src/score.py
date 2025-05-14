@@ -105,6 +105,10 @@ def recommend(candidates, duration=120, lat0=None, lon0=None):
             dist    = 0
         fee    = calculate_fee(row.iloc[0] if not row.empty else {}, duration)
         rs     = np.clip(rev,0,5)/5*100
+
+        print(f"처리 중: {name} (weekday={wd}, hour={hr})", file=sys.stderr)
+        print(f"혼잡도={cong}, 요금={fee}, 거리={dist}, 리뷰={rs}", file=sys.stderr)
+
         raw.append({"p_id":name,"cs":cs,"dist":dist,"fee":fee,"rs":rs})
 
     fees  = [r["fee"] for r in raw]; dists=[r["dist"] for r in raw]
@@ -139,6 +143,3 @@ def main():
     json.dump([{"p_id":i["p_id"],"주차장명": i["p_id"], **{k:round(next(x["score"] for x in res[k] if x["p_id"]==i["p_id"]),2) for k in res}} for i in res["혼잡도우선"]], sys.stdout, ensure_ascii=False, indent=2)
 
 if __name__=="__main__": main()
-
-with open("debug_raw.json", "w", encoding="utf-8") as f:
-    json.dump(raw, f, indent=2, ensure_ascii=False)

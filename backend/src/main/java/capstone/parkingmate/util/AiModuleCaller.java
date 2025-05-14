@@ -45,7 +45,7 @@ public class AiModuleCaller {
         builder.directory(new File("/home/t25115/Jongp/ai/src"));
 
         // 오류 포함 불러오기(무한대기 방지용)
-        builder.redirectErrorStream(true);
+        builder.redirectErrorStream(false);
         Process process = null;
 
         try {
