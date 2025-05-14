@@ -108,6 +108,9 @@ public class ParkingLotService {
     // 현재 위치 기반 추천 주차장
     public List<ParkingLotNearbyResponseDTO> recommendNearby(Long user_id, ParkingLotNearbyRequestDTO requestDTO) {
 
+        double baseLat = requestDTO.getLatitude();
+        double baseLon = requestDTO.getLongitude();
+
         // 후보 리스트 추출
         List<ParkingLot> nearbyLots = parkingLotRepository.findTop3ByNearest(requestDTO.getLatitude(), requestDTO.getLongitude());
 
@@ -157,6 +160,10 @@ public class ParkingLotService {
                     String name = (String) entry.get("주차장명");
                     ParkingLot data = parkingLotRepository.findByName(name);
 
+                    // 현재 위치 - 주차장 사이 거리
+                    double dist = haversine(baseLat, baseLon,
+                            data.getLatitude(), data.getLongitude());
+
                     // Object 로 꺼내서 Number 로 변환
                     Object raw = entry.get(preferred);
                     double score = 0.0;
@@ -170,6 +177,7 @@ public class ParkingLotService {
                             .fee(data.getFee())
                             .name(name)
                             .recommendationScore(score)
+                            .distance(dist)
                             .build();
                 })
                 .sorted((a,b) -> Double.compare(b.getRecommendationScore(), a.getRecommendationScore())) // 추천점수가 높은 순서로 정렬
@@ -296,6 +304,19 @@ public class ParkingLotService {
         }
 
         return result;
+    }
+
+    // 거리 계산 메서드
+    private double haversine(double lat1, double lon1, double lat2, double lon2) {
+        final double R = 6371.0; // 지구 반지름 (km)
+        double phi1 = Math.toRadians(lat1);
+        double phi2 = Math.toRadians(lat2);
+        double dphi = Math.toRadians(lat2 - lat1);
+        double dlambda = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dphi/2)*Math.sin(dphi/2)
+                + Math.cos(phi1)*Math.cos(phi2)
+                * Math.sin(dlambda/2)*Math.sin(dlambda/2);
+        return R * 2 * Math.asin(Math.sqrt(a));
     }
 
 }
