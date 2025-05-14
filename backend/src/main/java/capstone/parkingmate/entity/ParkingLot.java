@@ -40,8 +40,8 @@ public class ParkingLot {
     private Integer fee;
 
     // 추가 요금
-    @Column(name="extra_fee")
-    private Integer extraFee;
+    @Column(name="extra_fee", nullable = false)
+    private Integer extraFee = 0;
 
     // 북마크 관계
     @OneToMany(mappedBy = "parkingLot", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
