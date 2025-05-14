@@ -70,6 +70,7 @@ public class ParkingLotService {
 
         // 혼잡도 리스트 불러오기 및 이름 정제 후 p_id 부여
         List<CongestionDTO> realtimeList = CongestionApiParser.fetchCongestionData();
+        Map<String, Integer> totalMap = loadTotalSpacesFromCsv(); // 노상주차장 보정용 csv
         Map<String, Long> nameToPid = parkingLots.stream()
                 .collect(Collectors.toMap(ParkingLot::getName, ParkingLot::getP_id));
         for (CongestionDTO dto : realtimeList) {
@@ -107,6 +108,14 @@ public class ParkingLotService {
                         matched.ifPresent(dto -> {
                             int total = dto.getTotal_spaces();
                             int current = dto.getCurrent_vehicles();
+
+                            // ✅ 총 주차면수 보정 로직
+                            if (total == 1) {
+                                String lotName = lot.getName().trim();
+                                total = totalMap.getOrDefault(lotName, total);
+                            }
+
+                            System.out.println(">> 혼잡도 계산: current=" + current + " / total=" + total);
                             if (total > 0) {
                                 double congestion = Math.min(100.0, current * 100.0 / total);
                                 map.put("congestion", congestion);
@@ -174,6 +183,9 @@ public class ParkingLotService {
         // 혼잡도 API 호출
         List<CongestionDTO> realtimeList = CongestionApiParser.fetchCongestionData();
 
+        // 노상주차장 보정용 csv 코드
+        Map<String, Integer> totalMap = loadTotalSpacesFromCsv();
+
         // 이름 → p_id 매핑용 Map 생성
         Map<String, Long> nameToPid = nearbyLots.stream()
                 .collect(Collectors.toMap(ParkingLot::getName, ParkingLot::getP_id));
@@ -213,6 +225,14 @@ public class ParkingLotService {
                         matched.ifPresent(dto -> {
                             int total = dto.getTotal_spaces();
                             int current = dto.getCurrent_vehicles();
+
+                            // ✅ 총 주차면수 보정 로직
+                            if (total == 1) {
+                                String lotName = lot.getName().trim();
+                                total = totalMap.getOrDefault(lotName, total);
+                            }
+
+                            System.out.println(">> 혼잡도 계산: current=" + current + " / total=" + total);
                             if (total > 0) {
                                 double congestion = Math.min(100.0, current * 100.0 / total);
                                 map.put("congestion", congestion);
