@@ -101,7 +101,7 @@ public class ParkingLotService {
 
                     if (realtimePidSet.contains(lot.getP_id())) {
                         Optional<CongestionDTO> matched = realtimeList.stream()
-                                .filter(dto -> dto.getP_id().equals(lot.getP_id()))
+                                .filter(dto -> lot.getP_id().equals(dto.getP_id()))
                                 .findFirst();
 
                         matched.ifPresent(dto -> {
@@ -207,7 +207,7 @@ public class ParkingLotService {
 
                     if (realtimePidSet.contains(lot.getP_id())) {
                         Optional<CongestionDTO> matched = realtimeList.stream()
-                                .filter(dto -> dto.getP_id().equals(lot.getP_id()))
+                                .filter(dto -> lot.getP_id().equals(dto.getP_id()))
                                 .findFirst();
 
                         matched.ifPresent(dto -> {
