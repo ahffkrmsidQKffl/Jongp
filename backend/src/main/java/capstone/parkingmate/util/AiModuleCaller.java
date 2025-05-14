@@ -51,10 +51,12 @@ public class AiModuleCaller {
         try {
             process = builder.start();
 
+            final InputStream errStream = process.getErrorStream();
+
             // stderr 읽는 스레드 추가
             Thread stderrThread = new Thread(() -> {
                 try (BufferedReader errReader = new BufferedReader(
-                        new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8))) {
+                        new InputStreamReader(errStream, StandardCharsets.UTF_8))) {
                     String line;
                     while ((line = errReader.readLine()) != null) {
                         log.warn("[AI stderr] {}", line); // 디버깅 메시지 로그로 출력
