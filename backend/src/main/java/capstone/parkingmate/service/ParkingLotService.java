@@ -93,7 +93,7 @@ public class ParkingLotService {
                     map.put("hour", requestDTO.getHour());
 
                     try {
-                        int pIdNumeric = Integer.parseInt(lot.getP_id());
+                        int pIdNumeric = lot.getP_id().intValue();
                         if (pIdNumeric >= 110) {
                             Optional<CongestionDTO> matched = realtimeList.stream()
                                     .filter(dto -> {
