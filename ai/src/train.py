@@ -33,6 +33,12 @@ for c in df.select_dtypes(["int64","float64"]): df[c] = df[c].astype("float32")
 features = ["주차면수","입차대수","출차대수","지난주_혼잡도","지지난주_혼잡도","지지지난주_혼잡도","시간","요일"]
 X = df[features].copy()
 y = df["혼잡도(%)"].copy()
+# NaN/Inf 처리 추가
+# Inf -> NaN -> 열 평균으로 대체
+X.replace([np.inf, -np.inf], np.nan, inplace=True)
+y.replace([np.inf, -np.inf], np.nan, inplace=True)
+X.fillna(X.mean(), inplace=True)
+y.fillna(y.mean(), inplace=True)
 ordinal = OrdinalEncoder()
 X[["요일"]] = ordinal.fit_transform(X[["요일"]])
 numerical = [f for f in features if f != "요일"]
