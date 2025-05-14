@@ -37,7 +37,7 @@ fit_columns = joblib.load("fit_columns.joblib")
 model       = joblib.load("model.joblib")
 
 # 정적 데이터: 두 개 로드 및 요금 예외 처리
-df_static_a = pd.read_csv("서울시_공영주차장_최종.csv", encoding="utf-8")
+df_static_a = pd.read_csv("서울시_공영주차장_최종.csv", encoding="cp949")
 df_static_b = pd.read_csv("전처리_완료_실시간_주차장.csv", encoding="utf-8")
 for df_s in [df_static_a, df_static_b]:
     df_s["주차장명"] = df_s["주차장명"].str.strip().str.lower()
