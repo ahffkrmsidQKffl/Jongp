@@ -85,18 +85,18 @@ def recommend(candidates, duration=120, lat0=None, lon0=None):
     for c in candidates:
         name,rev,wd,hr = c["p_id"], c.get("review",0), c.get("weekday",1), c.get("hour",0)
 
-        print(f"▶️ 처리 중: {name} ({wd=}, {hr=})", file=sys.stderr)
+        print(f"처리 중: {name} ({wd=}, {hr=})", file=sys.stderr)
 
         try:
             # 혼잡도 분기
             if str(name).isdigit() and int(name) >= 110 and "congestion" in c:
                 cong = c["congestion"]
-                print(f"✅ 실시간 혼잡도 사용: {cong}", file=sys.stderr)
+                print(f"실시간 혼잡도 사용: {cong}", file=sys.stderr)
             else:
                 cong = predict_congestion(name, wd, hr)
-                print(f"🧠 예측 혼잡도 사용: {cong}", file=sys.stderr)
+                print(f"예측 혼잡도 사용: {cong}", file=sys.stderr)
         except Exception as e:
-            print(f"❌ 혼잡도 계산 실패 ({name}): {e}", file=sys.stderr)
+            print(f"혼잡도 계산 실패 ({name}): {e}", file=sys.stderr)
             cong = 100  # 혼잡도 최대치 처리 (임시 보정)
 
         cs = np.clip(100-cong,0,100)
@@ -107,7 +107,7 @@ def recommend(candidates, duration=120, lat0=None, lon0=None):
         else:
             row = df_static_a[df_static_a["주차장명"]==name.lower()]
 
-        print(f"📄 정적 데이터 매칭: {name} → {len(row)}건", file=sys.stderr)
+        print(f"정적 데이터 매칭: {name} → {len(row)}건", file=sys.stderr)
 
         try:
             if not row.empty and lat0 is not None and lon0 is not None:
@@ -117,7 +117,7 @@ def recommend(candidates, duration=120, lat0=None, lon0=None):
                 dist    = 0
             fee    = calculate_fee(row.iloc[0] if not row.empty else {}, duration)
         except Exception as e:
-            print(f"❌ 거리/요금 계산 실패 ({name}): {e}", file=sys.stderr)
+            print(f"거리/요금 계산 실패 ({name}): {e}", file=sys.stderr)
             dist, fee = 0, 0
 
         rs     = np.clip(rev,0,5)/5*100
@@ -145,10 +145,10 @@ def recommend(candidates, duration=120, lat0=None, lon0=None):
 def main():
     try:
         data=json.load(sys.stdin)
-        print("✅ Received input:", data, file=sys.stderr)
+        print("Received input:", data, file=sys.stderr)
         #예시 데이터
     except Exception as e:
-        print("❌ JSON parsing error:", str(e), file=sys.stderr)
+        print("JSON parsing error:", str(e), file=sys.stderr)
         return  # 에러 발생 시 아예 종료
 
     res = recommend(data["candidates"], data.get("parking_duration",120), data.get("base_lat"), data.get("base_lon"))
