@@ -36,13 +36,13 @@ ordinal     = joblib.load("ordinal.joblib")
 fit_columns = joblib.load("fit_columns.joblib")
 model       = joblib.load("model.joblib")
 
-# 데이터
-df_static = pd.read_csv("서울시_공영주차장_최종.csv", encoding="cp949")
-df_static["주차장명"] = df_static["주차장명"].str.strip().str.lower()
-
-#요금 예외처리
-df_static["기본 주차 요금"].fillna(df_static["기본 주차 요금"].mean(), inplace=True)
-df_static["추가 단위 요금"].fillna(df_static["추가 단위 요금"].mean(), inplace=True)
+# 정적 데이터: 두 개 로드 및 요금 예외 처리
+df_static_a = pd.read_csv("서울시_공영주차장_최종.csv", encoding="cp949")
+df_static_b = pd.read_csv("전처리_완료_실시간_주차장.csv", encoding="cp949")
+for df_s in [df_static_a, df_static_b]:
+    df_s["주차장명"] = df_s["주차장명"].str.strip().str.lower()
+    df_s["기본 주차 요금"].fillna(df_s["기본 주차 요금"].mean(), inplace=True)
+    df_s["추가 단위 요금"].fillna(df_s["추가 단위 요금"].mean(), inplace=True)
 
 # 헬퍼 함수 정의
 def haversine(lat1, lon1, lat2, lon2):
@@ -84,9 +84,20 @@ def recommend(candidates, duration=120, lat0=None, lon0=None):
     raw=[]
     for c in candidates:
         name,rev,wd,hr = c["p_id"], c.get("review",0), c.get("weekday",1), c.get("hour",0)
-        cong = predict_congestion(name, wd, hr)
-        cs   = np.clip(100-cong,0,100)
-        row  = df_static[df_static["주차장명"]==name.lower()]
+
+        # 혼잡도 분기
+        if str(name).isdigit() and int(name) >= 110 and "congestion" in c:
+            cong = c["congestion"]
+        else:
+            cong = predict_congestion(name, wd, hr)
+        cs = np.clip(100-cong,0,100)
+
+        # 정적 정보 분기
+        if str(name).isdigit() and int(name) >= 110:
+            row = df_static_b[df_static_b["주차장명"]==name.lower()]
+        else:
+            row = df_static_a[df_static_a["주차장명"]==name.lower()]
+
         if not row.empty and lat0 is not None and lon0 is not None:
             lat,lon = row[["위도","경도"]].iloc[0]
             dist    = haversine(lat0,lon0,lat,lon)
@@ -95,6 +106,7 @@ def recommend(candidates, duration=120, lat0=None, lon0=None):
         fee    = calculate_fee(row.iloc[0] if not row.empty else {}, duration)
         rs     = np.clip(rev,0,5)/5*100
         raw.append({"p_id":name,"cs":cs,"dist":dist,"fee":fee,"rs":rs})
+
     fees  = [r["fee"] for r in raw]; dists=[r["dist"] for r in raw]
     minf,maxf = (min(fees),max(fees)) if fees else (0,1)
     mind,maxd = (min(dists),max(dists)) if dists else (0,1)

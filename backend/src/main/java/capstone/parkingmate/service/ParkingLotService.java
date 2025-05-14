@@ -56,6 +56,8 @@ public class ParkingLotService {
     public List<ParkingLotAllResponseDTO> all_parking_lot(Long user_id, ParkingLotAllRequestDTO requestDTO) {
         List<ParkingLot> parkingLots = parkingLotRepository.findAll();
 
+        List<CongestionDTO> realtimeList = CongestionApiParser.fetchCongestionData();
+
         List<Map<String, Object>> aiInput = parkingLots.stream()
                 .map(lot -> {
                     Map<String, Object> map = new HashMap<>();
@@ -63,6 +65,30 @@ public class ParkingLotService {
                     map.put("review", lot.getAvgRating() != null ? lot.getAvgRating().getAvg_score() : 0.0);
                     map.put("weekday", requestDTO.getWeekday());
                     map.put("hour", requestDTO.getHour());
+
+                    try {
+                        int pIdNumeric = Integer.parseInt(lot.getName());
+                        if (pIdNumeric >= 110) {
+                            Optional<CongestionDTO> matched = realtimeList.stream()
+                                    .filter(dto -> {
+                                        String cleaned = dto.getName().replace(" 공영주차장(시)", "").trim();
+                                        return cleaned.equals(lot.getName().trim());
+                                    })
+                                    .findFirst();
+
+                            matched.ifPresent(dto -> {
+                                int total = dto.getTotal_spaces();
+                                int current = dto.getCurrent_vehicles();
+                                if (total > 0) {
+                                    double congestion = Math.min(100.0, current * 100.0 / total);
+                                    map.put("congestion", congestion);
+                                }
+                            });
+                        }
+                    } catch (NumberFormatException ignore) {
+                        // 문자열 p_id는 무시
+                    }
+
                     return map;
                 })
                 .collect(Collectors.toList());
@@ -118,8 +144,10 @@ public class ParkingLotService {
         if(nearbyLots.isEmpty()) {
             return Collections.emptyList();
         }
-        
+
         // ai 모듈에 넘길 데이터 가공
+        List<CongestionDTO> realtimeList = CongestionApiParser.fetchCongestionData();
+
         List<Map<String, Object>> aiInput = nearbyLots.stream()
                 .map(lot -> {
                     Map<String, Object> map = new HashMap<>();
@@ -127,6 +155,30 @@ public class ParkingLotService {
                     map.put("review", lot.getAvgRating() != null ? lot.getAvgRating().getAvg_score() : 0.0);
                     map.put("weekday", requestDTO.getWeekday());
                     map.put("hour", requestDTO.getHour());
+
+                    try {
+                        int pIdNumeric = Integer.parseInt(lot.getName());
+                        if (pIdNumeric >= 110) {
+                            Optional<CongestionDTO> matched = realtimeList.stream()
+                                    .filter(dto -> {
+                                        String cleaned = dto.getName().replace(" 공영주차장(시)", "").trim();
+                                        return cleaned.equals(lot.getName().trim());
+                                    })
+                                    .findFirst();
+
+                            matched.ifPresent(dto -> {
+                                int total = dto.getTotal_spaces();
+                                int current = dto.getCurrent_vehicles();
+                                if (total > 0) {
+                                    double congestion = Math.min(100.0, current * 100.0 / total);
+                                    map.put("congestion", congestion);
+                                }
+                            });
+                        }
+                    } catch (NumberFormatException ignore) {
+                        // 문자열 p_id는 무시
+                    }
+
                     return map;
                 })
                 .collect(Collectors.toList());
