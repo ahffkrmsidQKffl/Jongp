@@ -11,4 +11,6 @@ public class BookmarkResponseDTO {
     private String address; // 주차장 주소
     private Integer fee;    // 주차장 요금
     private Double avg_rating; // 주차장 평균 평점
+
+    private Long bookmarkId; // 북마크 ID
 }

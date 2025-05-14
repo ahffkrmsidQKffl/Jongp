@@ -54,6 +54,7 @@ public class BookmarkService {
                     dto.setName(bookmark.getParkingLot().getName());
                     dto.setAddress(bookmark.getParkingLot().getAddress());
                     dto.setFee(bookmark.getParkingLot().getFee());
+                    dto.setBookmarkId(bookmark.getBookmark_id());
                     return dto;
                 })
                 .toList();
