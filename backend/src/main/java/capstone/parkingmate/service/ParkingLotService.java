@@ -31,6 +31,18 @@ public class ParkingLotService {
     private final AiModuleCaller aiModuleCaller;
     private final UserRepository userRepository;
 
+    //실시간 주차장 이름 정제용 함수
+    private String normalizeToLocalName(String congestionName) {
+        String raw = congestionName.trim();
+
+        if (raw.equals("마포유수지(시)")) return "마포유수지";
+        if (raw.equals("명일파출소 공영주차장(시)")) return "명일동";
+        if (raw.equals("적선동 주차장(시)")) return "적선동";
+        if (raw.equals("반포천 공영주차장(파미에)(시)")) return "파미에(반포천)";
+        if (raw.equals("종묘주차장")) return "종묘";
+        return raw.replace(" 공영주차장(시)", "").trim();
+    }
+
     // 주차장 전체 조회
     public List<ParkingLotRetrieveDTO> retrieve() {
 
@@ -56,7 +68,21 @@ public class ParkingLotService {
     public List<ParkingLotAllResponseDTO> all_parking_lot(Long user_id, ParkingLotAllRequestDTO requestDTO) {
         List<ParkingLot> parkingLots = parkingLotRepository.findAll();
 
+        // 이름을 key, p_id를 value로 한 Map 생성
+        Map<String, Long> nameToPid = parkingLots.stream()
+                .collect(Collectors.toMap(ParkingLot::getName, ParkingLot::getP_id));
+
+        // 혼잡도 리스트 불러오기
         List<CongestionDTO> realtimeList = CongestionApiParser.fetchCongestionData();
+
+        // 각 DTO에 p_id 세팅
+        for (CongestionDTO dto : realtimeList) {
+            String normalized = normalizeToLocalName(dto.getName());
+            Long pid = nameToPid.get(normalized);  // 이름으로 찾은 p_id
+            if (pid != null) {
+                dto.setP_id(pid);  // 혼잡도 DTO에 p_id를 채워넣기
+            }
+        }
 
         List<Map<String, Object>> aiInput = parkingLots.stream()
                 .map(lot -> {
@@ -67,12 +93,12 @@ public class ParkingLotService {
                     map.put("hour", requestDTO.getHour());
 
                     try {
-                        int pIdNumeric = Integer.parseInt(lot.getName());
+                        int pIdNumeric = Integer.parseInt(lot.getP_id());
                         if (pIdNumeric >= 110) {
                             Optional<CongestionDTO> matched = realtimeList.stream()
                                     .filter(dto -> {
-                                        String cleaned = dto.getName().replace(" 공영주차장(시)", "").trim();
-                                        return cleaned.equals(lot.getName().trim());
+                                        String normalized = normalizeToLocalName(dto.getName());
+                                        return normalized.equals(lot.getName().trim());
                                     })
                                     .findFirst();
 
@@ -146,8 +172,23 @@ public class ParkingLotService {
         }
 
         // ai 모듈에 넘길 데이터 가공
+        // 혼잡도 API 호출
         List<CongestionDTO> realtimeList = CongestionApiParser.fetchCongestionData();
 
+        // 이름 → p_id 매핑용 Map 생성
+        Map<String, Long> nameToPid = nearbyLots.stream()
+                .collect(Collectors.toMap(ParkingLot::getName, ParkingLot::getP_id));
+
+        // 혼잡도 DTO에 p_id 세팅
+        for (CongestionDTO dto : realtimeList) {
+            String normalized = normalizeToLocalName(dto.getName());
+            Long pid = nameToPid.get(normalized);
+            if (pid != null) {
+                dto.setP_id(pid);
+            }
+        }
+
+        // AI 입력 구성
         List<Map<String, Object>> aiInput = nearbyLots.stream()
                 .map(lot -> {
                     Map<String, Object> map = new HashMap<>();
@@ -156,34 +197,25 @@ public class ParkingLotService {
                     map.put("weekday", requestDTO.getWeekday());
                     map.put("hour", requestDTO.getHour());
 
-                    try {
-                        int pIdNumeric = Integer.parseInt(lot.getName());
-                        if (pIdNumeric >= 110) {
-                            Optional<CongestionDTO> matched = realtimeList.stream()
-                                    .filter(dto -> {
-                                        String cleaned = dto.getName().replace(" 공영주차장(시)", "").trim();
-                                        return cleaned.equals(lot.getName().trim());
-                                    })
-                                    .findFirst();
+                    // 실시간 데이터 적용 (p_id 기준)
+                    if (lot.getP_id() >= 110) {
+                        Optional<CongestionDTO> matched = realtimeList.stream()
+                                .filter(dto -> dto.getP_id() != null && dto.getP_id().equals(lot.getP_id()))
+                                .findFirst();
 
-                            matched.ifPresent(dto -> {
-                                int total = dto.getTotal_spaces();
-                                int current = dto.getCurrent_vehicles();
-                                if (total > 0) {
-                                    double congestion = Math.min(100.0, current * 100.0 / total);
-                                    map.put("congestion", congestion);
-                                }
-                            });
-                        }
-                    } catch (NumberFormatException ignore) {
-                        // 문자열 p_id는 무시
+                        matched.ifPresent(dto -> {
+                            int total = dto.getTotal_spaces();
+                            int current = dto.getCurrent_vehicles();
+                            if (total > 0) {
+                                double congestion = Math.min(100.0, current * 100.0 / total);
+                                map.put("congestion", congestion);
+                            }
+                        });
                     }
 
                     return map;
                 })
                 .collect(Collectors.toList());
-
-        System.out.println("aiInput = " + aiInput);
 
         int parkingDuration = 120;
 
@@ -275,22 +307,15 @@ public class ParkingLotService {
         Integer totalSpaces = null;
 
         for (CongestionDTO congestion : congestionList) {
-            String cleanedName = congestion.getName().replace(" 공영주차장(시)", "").trim();
+            String normalized = normalizeToLocalName(congestion.getName());
 
-            if (cleanedName.equals(localName)
-                    || (localName.equals("종묘") && cleanedName.equals("종묘주차장"))
-                    || (localName.equals("마포유수지") && congestion.getName().trim().equals("마포유수지(시)"))
-                    || (localName.equals("명일동") && congestion.getName().trim().equals("명일파출소 공영주차장(시)"))
-                    || (localName.equals("적선동") && congestion.getName().trim().equals("적선동 주차장(시)"))
-                    || (localName.equals("파미에(반포천)") && congestion.getName().trim().equals("반포천 공영주차장(파미에)(시)"))
-            ) {
-
+            if (normalized.equals(localName)) {
                 currentVehicles = congestion.getCurrent_vehicles();
-                totalSpaces = congestion.getTotal_spaces(); // 일단 실시간 API 기준
-
+                totalSpaces = congestion.getTotal_spaces();
                 break;
             }
         }
+
         responseDTO.setCurrent_vehicles(currentVehicles != null ? currentVehicles : 0);
 
         // ✅ 보정 로직: 총 주차면수가 1이라면 → CSV 기반 보정값으로 덮어쓰기
