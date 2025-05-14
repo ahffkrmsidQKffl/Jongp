@@ -23,7 +23,7 @@ df["혼잡도(%)"] = df["혼잡도(%)"].clip(0,100)
 lags = [(7*24, "지난주_혼잡도"), (14*24, "지지난주_혼잡도"), (21*24, "지지지난주_혼잡도")]
 for lag, col in lags:
     df[col] = df.groupby(["주차장명","요일","시간"])["혼잡도(%)"].shift(lag)
-    df[col].fillna(method="ffill", inplace=True)
+    df[col] = df[col].ffill()
     df[col].fillna(df["혼잡도(%)"], inplace=True)
 # 불필요 컬럼 제거 및 타입 최적화
 df.drop(columns=["시간대"], inplace=True)
