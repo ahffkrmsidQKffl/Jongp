@@ -9,4 +9,6 @@ public class ParkingLotRequestDTO {
     private int fee;
     private double latitude;
     private double longitude;
+
+    private int extraFee;
 }

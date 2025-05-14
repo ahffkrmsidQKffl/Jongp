@@ -8,6 +8,9 @@ public class ParkingLotUpdateRequestDTO {
     private String name;
     private String address;
     private int fee;
+
+    private int extraFee;
+
     private double latitude;
     private double longitude;
 }

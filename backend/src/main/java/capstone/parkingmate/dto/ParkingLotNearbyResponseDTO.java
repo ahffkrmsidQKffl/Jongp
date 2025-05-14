@@ -13,5 +13,7 @@ public class ParkingLotNearbyResponseDTO {
     private String address;
     private int fee;
 
+    private int extraFee;
+
     private double distance;
 }

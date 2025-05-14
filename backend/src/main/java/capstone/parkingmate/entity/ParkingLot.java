@@ -39,6 +39,10 @@ public class ParkingLot {
     @Column
     private Integer fee;
 
+    // 추가 요금
+    @Column(name="extra_fee")
+    private Integer extraFee;
+
     // 북마크 관계
     @OneToMany(mappedBy = "parkingLot", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Bookmark> bookmarks;

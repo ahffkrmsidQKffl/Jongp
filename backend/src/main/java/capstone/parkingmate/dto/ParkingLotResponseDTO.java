@@ -10,6 +10,9 @@ public class ParkingLotResponseDTO {
     private String name;
     private String address;
     private int fee;
+
+    private int extraFee;
+
     private double latitude;
     private double longitude;
     private double avg_rating;

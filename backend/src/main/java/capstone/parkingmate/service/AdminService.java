@@ -99,6 +99,9 @@ public class AdminService {
             responseDTO.setFee(data.getFee());
             responseDTO.setLatitude(data.getLatitude());
             responseDTO.setLongitude(data.getLongitude());
+
+            responseDTO.setExtraFee(data.getExtraFee());
+
             if(data.getAvgRating() == null) {
                 responseDTO.setAvg_rating(0.0);
             } else {
@@ -136,6 +139,8 @@ public class AdminService {
         parkingLot.setLatitude(requestDTO.getLatitude());
         parkingLot.setLongitude(requestDTO.getLongitude());
 
+        parkingLot.setExtraFee(requestDTO.getExtraFee());
+
         // 사용자 디비 저장
         parkingLotRepository.save(parkingLot);
 
@@ -158,6 +163,8 @@ public class AdminService {
         data.setFee(updateRequestDTO.getFee());
         data.setLatitude(updateRequestDTO.getLatitude());
         data.setLongitude(updateRequestDTO.getLongitude());
+
+        data.setExtraFee(updateRequestDTO.getExtraFee());
         
         // 데이터 저장
         parkingLotRepository.save(data);
@@ -195,6 +202,8 @@ public class AdminService {
                     dto.setLatitude(p.getLatitude());
                     dto.setLongitude(p.getLongitude());
                     dto.setFee(p.getFee());
+
+                    dto.setExtraFee(p.getExtraFee());
 
                     // ⭐ avg_score는 ParkingLotAvgRating 엔티티에서 가져오기
                     if (p.getAvgRating() != null) {

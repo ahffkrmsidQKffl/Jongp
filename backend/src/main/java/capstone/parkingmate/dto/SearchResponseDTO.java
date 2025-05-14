@@ -15,4 +15,5 @@ public class SearchResponseDTO {
     private String address;
     private Double rating;
     private Integer fee;
+    private Integer extraFee;
 }

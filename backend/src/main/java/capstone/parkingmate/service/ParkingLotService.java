@@ -180,6 +180,7 @@ public class ParkingLotService {
                             .name(name)
                             .recommendationScore(score)
                             .distance(dist)
+                            .extraFee(data.getExtraFee())
                             .build();
                 })
                 .sorted((a,b) -> Double.compare(b.getRecommendationScore(), a.getRecommendationScore())) // 추천점수가 높은 순서로 정렬
@@ -205,6 +206,8 @@ public class ParkingLotService {
         responseDTO.setFee(data.getFee());
         responseDTO.setLatitude(data.getLatitude());
         responseDTO.setLongitude(data.getLongitude());
+
+        responseDTO.setExtraFee(data.getExtraFee());
 
         if (data.getAvgRating() == null) {
             responseDTO.setAvg_score(0.0);
@@ -264,6 +267,9 @@ public class ParkingLotService {
             responseDTO.setName(data.getName());
             responseDTO.setAddress(data.getAddress());
             responseDTO.setFee(data.getFee());
+
+            responseDTO.setExtraFee(data.getExtraFee());
+
             if(data.getAvgRating() == null) {
                 responseDTO.setRating(0.0);
             } else {
