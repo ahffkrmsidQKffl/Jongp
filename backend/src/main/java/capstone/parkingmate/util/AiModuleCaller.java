@@ -51,6 +51,20 @@ public class AiModuleCaller {
         try {
             process = builder.start();
 
+            // stderr 읽는 스레드 추가
+            Thread stderrThread = new Thread(() -> {
+                try (BufferedReader errReader = new BufferedReader(
+                        new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8))) {
+                    String line;
+                    while ((line = errReader.readLine()) != null) {
+                        log.warn("[AI stderr] {}", line); // 디버깅 메시지 로그로 출력
+                    }
+                } catch (IOException e) {
+                    log.error("Error reading stderr", e);
+                }
+            });
+            stderrThread.start();
+
             // Write directly to the process's stdin and close to signal EOF
             try (OutputStream os = process.getOutputStream()) {
                 objectMapper.writeValue(os, payload);

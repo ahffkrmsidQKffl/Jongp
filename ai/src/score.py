@@ -84,30 +84,38 @@ def recommend(candidates, duration=120, lat0=None, lon0=None):
     raw=[]
     for c in candidates:
         name,rev,wd,hr = c["p_id"], c.get("review",0), c.get("weekday",1), c.get("hour",0)
+        print(f"[INFO] 후보 처리 시작: {name} (weekday={wd}, hour={hr})", file=sys.stderr)
 
         # 혼잡도 분기
         if str(name).isdigit() and int(name) >= 110 and "congestion" in c:
             cong = c["congestion"]
+            print(f"[DEBUG] 혼잡도 예측 방식: 입력값 사용 → {cong:.2f}", file=sys.stderr)
         else:
             cong = predict_congestion(name, wd, hr)
+            print(f"[DEBUG] 혼잡도 예측 방식: AI 예측 → {cong:.2f}", file=sys.stderr)
         cs = np.clip(100-cong,0,100)
+        print(f"[DEBUG] 혼잡도 점수 (가용도): {cs:.2f}", file=sys.stderr)
 
         # 정적 정보 분기
         if str(name).isdigit() and int(name) >= 110:
             row = df_static_b[df_static_b["주차장명"]==name.lower()]
+            print(f"[DEBUG] 사용된 정적 파일: df_static_b", file=sys.stderr)
         else:
             row = df_static_a[df_static_a["주차장명"]==name.lower()]
+            print(f"[DEBUG] 사용된 정적 파일: df_static_a", file=sys.stderr)
 
         if not row.empty and lat0 is not None and lon0 is not None:
             lat,lon = row[["위도","경도"]].iloc[0]
             dist    = haversine(lat0,lon0,lat,lon)
         else:
             dist    = 0
-        fee    = calculate_fee(row.iloc[0] if not row.empty else {}, duration)
-        rs     = np.clip(rev,0,5)/5*100
+        print(f"[DEBUG] 거리 계산 결과: {dist:.3f} km", file=sys.stderr)
 
-        print(f"처리 중: {name} (weekday={wd}, hour={hr})", file=sys.stderr)
-        print(f"혼잡도={cong}, 요금={fee}, 거리={dist}, 리뷰={rs}", file=sys.stderr)
+        fee    = calculate_fee(row.iloc[0] if not row.empty else {}, duration)
+        print(f"[DEBUG] 계산된 주차요금 (duration={duration}분): {fee:.2f}원", file=sys.stderr)
+
+        rs     = np.clip(rev,0,5)/5*100
+        print(f"[DEBUG] 리뷰 점수 변환: {rev:.1f} → {rs:.2f} (0~100 scale)", file=sys.stderr)
 
         raw.append({"p_id":name,"cs":cs,"dist":dist,"fee":fee,"rs":rs})
 
@@ -126,6 +134,7 @@ def recommend(candidates, duration=120, lat0=None, lon0=None):
             ds =(maxd - r["dist"]) / (maxd-mind)*100 if maxd>mind else 0
             sc = w["w_c"]*r["cs"] + w["w_d"]*ds + w["w_f"]*fs + w["w_r"]*r["rs"]
             temp.append({"p_id":r["p_id"],"score":sc})
+            print(f"[SCORE] {key} - {r['p_id']} → 혼잡도={r['cs']:.1f}, 거리={ds:.1f}, 요금={fs:.1f}, 리뷰={r['rs']:.1f} → 종합={sc:.2f}", file=sys.stderr)
         out[key]=temp
     return out
 
