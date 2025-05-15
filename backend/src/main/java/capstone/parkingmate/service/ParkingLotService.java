@@ -198,9 +198,11 @@ public class ParkingLotService {
 
             if (pid != null) {
                 dto.setP_id(pid);
-            } else {
-                System.out.println("[WARN] 혼잡도 이름 매핑 실패 → 원본: " + originalName + " / 정제 후: " + normalized);
             }
+
+//            else {
+//                System.out.println("[WARN] 혼잡도 이름 매핑 실패 → 원본: " + originalName + " / 정제 후: " + normalized);
+//            }
         }
 
         Set<Long> realtimePidSet = realtimeList.stream()
