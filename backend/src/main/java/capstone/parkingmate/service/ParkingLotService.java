@@ -117,7 +117,7 @@ public class ParkingLotService {
 
                             System.out.println(">> 혼잡도 계산: current=" + current + " / total=" + total);
                             if (total > 0) {
-                                double congestion = Math.min(100.0, current * 100.0 / total);
+                                double congestion = Math.min(100.0, current * 100.0 / total) / 100.0; // 혼잡도를 0~1사이의 스케일된 값으로 전달
                                 map.put("congestion", congestion);
                             }
                         });
@@ -234,7 +234,7 @@ public class ParkingLotService {
 
                             System.out.println(">> 혼잡도 계산: current=" + current + " / total=" + total);
                             if (total > 0) {
-                                double congestion = Math.min(100.0, current * 100.0 / total);
+                                double congestion = Math.min(100.0, current * 100.0 / total)/ 100.0; // 혼잡도를 0~1사이의 스케일된 값으로 전달
                                 map.put("congestion", congestion);
                             }
                         });
