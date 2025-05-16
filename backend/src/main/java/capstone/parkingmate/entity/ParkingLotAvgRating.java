@@ -19,11 +19,15 @@ public class ParkingLotAvgRating {
 
     @Column(nullable = false)
     // 평균 평점
-    private Double avg_score;
+    private Double avg_score = 0.0;
+
+    // 합산 평점
+    @Column(nullable = false)
+    private Double total_score = 0.0;
 
     // 평점 개수
     @Column(nullable = false)
-    private Integer rating_count;
+    private Integer rating_count = 0;
 
     // 주차장
     @OneToOne(fetch = FetchType.LAZY)
