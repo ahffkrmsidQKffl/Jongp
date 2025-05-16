@@ -188,7 +188,7 @@ public class RatingService {
             throw new CustomException("본인이 작성한 평점만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN);
         }
 
-        ParkingLot parkingLot = rating.getParkingLot();
+        ParkingLot lot = rating.getParkingLot();
 
         // 4. 평점 삭제
         ratingRepository.delete(rating);
