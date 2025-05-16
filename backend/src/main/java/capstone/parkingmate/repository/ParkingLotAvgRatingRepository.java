@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.List;
 
 public interface ParkingLotAvgRatingRepository extends JpaRepository<ParkingLotAvgRating, Long> {
-    Optional<ParkingLotAvgRating> findByParkingLot_p_id(Long pId);
+    Optional<ParkingLotAvgRating> findByParkingLotPId;
 
 
 }

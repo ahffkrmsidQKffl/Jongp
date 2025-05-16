@@ -170,7 +170,7 @@ public class RatingService {
         double   avgScore   = ((Number) agg[0]).doubleValue();
         int      ratingCnt  = ((Number) agg[1]).intValue();
 
-        ParkingLotAvgRating ar = avgRepo.findByParkingLot_p_id(pId)
+        ParkingLotAvgRating ar = avgRepo.findByParkingLotPId(pId)
                 .orElseGet(() -> {
                     ParkingLot lot = parkingLotRepository.findById(pId)
                             .orElseThrow();               // 커스텀 예외로 교체 가능
