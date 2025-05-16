@@ -39,7 +39,7 @@ public class ParkingLotService {
         if (raw.equals("명일파출소 공영주차장(시)")) return "명일동";
         if (raw.equals("적선동 주차장(시)")) return "적선동";
         if (raw.equals("반포천 공영주차장(파미에)(시)")) return "파미에(반포천)";
-        if (raw.equals("종묘주차장")) return "종묘";
+        if (raw.equals("종묘주차장 공영주차장(시)")) return "종묘";
         return raw.replace(" 공영주차장(시)", "").trim();
     }
 
