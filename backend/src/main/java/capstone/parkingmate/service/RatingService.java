@@ -7,7 +7,6 @@ import capstone.parkingmate.dto.ResponseData;
 import capstone.parkingmate.entity.Rating;
 import capstone.parkingmate.entity.User;
 import capstone.parkingmate.entity.ParkingLot;
-import capstone.parkingmate.entity.ParkingLotAvgRating;
 import capstone.parkingmate.exception.CustomException;
 import capstone.parkingmate.repository.ParkingLotRepository;
 import capstone.parkingmate.repository.RatingRepository;
