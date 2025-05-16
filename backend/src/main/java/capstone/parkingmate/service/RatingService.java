@@ -4,10 +4,12 @@ import capstone.parkingmate.dto.RatingRequestDTO;
 import capstone.parkingmate.dto.RatingResponseDTO;
 import capstone.parkingmate.dto.RatingUpdateRequestDTO;
 import capstone.parkingmate.dto.ResponseData;
+import capstone.parkingmate.entity.ParkingLotAvgRating;
 import capstone.parkingmate.entity.Rating;
 import capstone.parkingmate.entity.User;
 import capstone.parkingmate.entity.ParkingLot;
 import capstone.parkingmate.exception.CustomException;
+import capstone.parkingmate.repository.ParkingLotAvgRatingRepository;
 import capstone.parkingmate.repository.ParkingLotRepository;
 import capstone.parkingmate.repository.RatingRepository;
 import capstone.parkingmate.repository.UserRepository;
@@ -31,6 +33,8 @@ public class RatingService {
     private final UserRepository userRepository;
     private final ParkingLotRepository parkingLotRepository;
     private final UserService userService;
+    private final AdminService adminService;                         // ← 추가
+    private final ParkingLotAvgRatingRepository avgRatingRepository; // ← 추가
 
     // 평점 조회
     @Transactional(readOnly = true)
@@ -92,6 +96,31 @@ public class RatingService {
         // 4. 저장
         ratingRepository.save(rating);
 
+        // 전체 평점 리스트 조회 (관리자용)
+        List<RatingResponseDTO> all = adminService.retrieve_ratings();
+
+        // 이 주차장 평점만 필터
+        List<RatingResponseDTO> mine = all.stream()
+                .filter(r -> r.getP_name().equals(parkingLot.getName()))
+                .toList();
+
+        int newCount = mine.size();  // 방금 저장된 평점도 포함됨
+        double sum = mine.stream()
+                .mapToDouble(RatingResponseDTO::getScore)
+                .sum();
+        double newAvg = sum / newCount;
+
+        // AvgRating 엔티티에 반영
+        ParkingLotAvgRating avg = avgRatingRepository.findByParkingLot(parkingLot)
+                .orElseGet(() -> {
+                    ParkingLotAvgRating p = new ParkingLotAvgRating();
+                    p.setParkingLot(parkingLot);
+                    return p;
+                });
+        avg.setRating_count(newCount);
+        avg.setAvg_score(newAvg);
+        avgRatingRepository.save(avg);
+
         // 5. 성공 응답 반환
         return ResponseData.res(HttpStatus.CREATED, "평점 등록 성공");
     }
@@ -118,7 +147,27 @@ public class RatingService {
         // 4. 평점 점수 수정
         rating.setScore(ratingUpdateRequestDTO.getRating());
 
-        // 5. 수정일은 @PreUpdate로 자동 갱신
+        ratingRepository.save(rating);
+
+        // 전체 평점 조회 후 평균 재계산 (등록과 동일 로직)
+        ParkingLot lot = rating.getParkingLot();
+        List<RatingResponseDTO> all = adminService.retrieve_ratings();
+        List<RatingResponseDTO> mine = all.stream()
+                .filter(r -> r.getP_name().equals(lot.getName()))
+                .toList();
+
+        int newCount = mine.size();
+        double sum = mine.stream()
+                .mapToDouble(RatingResponseDTO::getScore)
+                .sum();
+        double newAvg = sum / newCount;
+
+        // AvgRating 저장
+        ParkingLotAvgRating avg = avgRatingRepository.findByParkingLot(lot)
+                .orElseThrow(() -> new CustomException("평점 통계 정보를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR));
+        avg.setRating_count(newCount);
+        avg.setAvg_score(newAvg);
+        avgRatingRepository.save(avg);
 
         // 6. 성공 응답 반환
         return ResponseData.res(HttpStatus.OK, "평점 수정 성공");
@@ -143,8 +192,28 @@ public class RatingService {
             throw new CustomException("본인이 작성한 평점만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN);
         }
 
+        ParkingLot lot = rating.getParkingLot();
+
         // 4. 평점 삭제
         ratingRepository.delete(rating);
+
+        // 전체 평점 조회 후 평균 재계산
+        List<RatingResponseDTO> all = adminService.retrieve_ratings();
+        List<RatingResponseDTO> mine = all.stream()
+                .filter(r -> r.getP_name().equals(lot.getName()))
+                .toList();
+
+        int newCount = mine.size();
+        double newAvg = newCount == 0
+                ? 0.0
+                : mine.stream().mapToDouble(RatingResponseDTO::getScore).sum() / newCount;
+
+        // AvgRating 저장
+        ParkingLotAvgRating avg = avgRatingRepository.findByParkingLot(lot)
+                .orElseThrow(() -> new CustomException("평점 통계 정보를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR));
+        avg.setRating_count(newCount);
+        avg.setAvg_score(newAvg);
+        avgRatingRepository.save(avg);
 
         // 5. 성공 응답 반환
         return ResponseData.res(HttpStatus.OK, "평점 삭제 성공");
