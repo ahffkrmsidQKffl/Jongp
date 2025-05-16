@@ -27,6 +27,6 @@ public class ParkingLotAvgRating {
 
     // 주차장
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "p_id", nullable = false)
+    @JoinColumn(name = "p_id", nullable = false, unique = true)
     private ParkingLot parkingLot;
 }
