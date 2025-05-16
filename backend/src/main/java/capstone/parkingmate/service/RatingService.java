@@ -93,7 +93,7 @@ public class RatingService {
                     n.setParkingLot(parkingLot);
                     return n;
                 });
-        avg.setTotal_score(avg.getTotal_score() + dto.getScore());
+        avg.setTotal_score(avg.getTotal_score() + ratingRequestDTO.getScore());
         avg.setRating_count(avg.getRating_count() + 1);
         avg.setAvg_score(avg.getTotal_score() / avg.getRating_count());
         avgRatingRepository.save(avg);
