@@ -167,7 +167,7 @@ public class RatingService {
     void updateAvgRating(Long pId) {
 
         Object[] row = ratingRepository.findAvgAndCountByParkingLot(pId);
-        double avgScore  = row[0] == null ? 0.0 : ((Number) row[0]).doubleValue();
+        double avgScore  = ((Number) row[0]).doubleValue();
         int    ratingCnt = ((Number) row[1]).intValue();
 
         ParkingLotAvgRating ar = avgRepo.findByParkingLotPId(pId)
@@ -183,7 +183,6 @@ public class RatingService {
         ar.setRating_count(ratingCnt);
 
         avgRepo.save(ar);      // insert 또는 update 모두 처리
-        log.info("AVG 갱신 pId={} row0={} row1={}", pId, row[0], row[1]);
     }
 }
 
