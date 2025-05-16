@@ -11,7 +11,6 @@ import capstone.parkingmate.exception.CustomException;
 import capstone.parkingmate.repository.ParkingLotRepository;
 import capstone.parkingmate.repository.RatingRepository;
 import capstone.parkingmate.repository.UserRepository;
-import capstone.parkingmate.repository.ParkingLotAvgRatingRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,6 @@ import java.util.stream.Collectors;
 public class RatingService {
 
     private final RatingRepository ratingRepository;
-    private final ParkingLotAvgRatingRepository avgRepo;
     private final UserRepository userRepository;
     private final ParkingLotRepository parkingLotRepository;
     private final UserService userService;
@@ -94,9 +92,6 @@ public class RatingService {
         // 4. 저장
         ratingRepository.save(rating);
 
-        // 평균 평점 업데이트!
-        updateAvgRating(rating.getParkingLot().getP_id());
-
         // 5. 성공 응답 반환
         return ResponseData.res(HttpStatus.CREATED, "평점 등록 성공");
     }
@@ -125,9 +120,6 @@ public class RatingService {
 
         // 5. 수정일은 @PreUpdate로 자동 갱신
 
-        // 5.5 평균 평점 업데이트!
-        updateAvgRating(rating.getParkingLot().getP_id());
-
         // 6. 성공 응답 반환
         return ResponseData.res(HttpStatus.OK, "평점 수정 성공");
     }
@@ -154,34 +146,8 @@ public class RatingService {
         // 4. 평점 삭제
         ratingRepository.delete(rating);
 
-        // 평균 평점 업데이트!
-        updateAvgRating(rating.getParkingLot().getP_id());
-
         // 5. 성공 응답 반환
         return ResponseData.res(HttpStatus.OK, "평점 삭제 성공");
-    }
-
-    // 평균 평점 계산
-    @Transactional
-    void updateAvgRating(Long pId) {
-
-        Object[] agg        = ratingRepository.findAvgAndCountByParkingLot(pId);
-        double   avgScore   = ((Number) agg[0]).doubleValue();
-        int      ratingCnt  = ((Number) agg[1]).intValue();
-
-        ParkingLotAvgRating ar = avgRepo.findByParkingLot_PId(pId)
-                .orElseGet(() -> {
-                    ParkingLot lot = parkingLotRepository.findById(pId)
-                            .orElseThrow();               // 커스텀 예외로 교체 가능
-                    ParkingLotAvgRating tmp = new ParkingLotAvgRating();
-                    tmp.setParkingLot(lot);
-                    return tmp;
-                });
-
-        ar.setAvg_score(avgScore);
-        ar.setRating_count(ratingCnt);
-
-        avgRepo.save(ar);      // insert 또는 update 모두 처리
     }
 }
 
