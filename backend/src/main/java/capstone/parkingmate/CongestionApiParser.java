@@ -40,6 +40,12 @@ public class CongestionApiParser {
                     if (name != null && totalStr != null && nowStr != null) {
                         int total = Integer.parseInt(totalStr);
                         int now = Integer.parseInt(nowStr);
+
+                        // 방어 코드: 현재 차량 수가 총 면수보다 크면, 총 면수로 보정
+                        if (now > total) {
+                            now = total;
+                        }
+
                         result.add(new CongestionDTO(name.trim(), total, now));
                     }
                 }
