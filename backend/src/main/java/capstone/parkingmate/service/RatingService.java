@@ -166,8 +166,9 @@ public class RatingService {
     @Transactional
     void updateAvgRating(Long pId) {
 
-
-
+        Object[] row = ratingRepository.findAvgAndCountByParkingLot(pId);
+        double avgScore  = row[0] == null ? 0.0 : ((Number) row[0]).doubleValue();
+        int    ratingCnt = ((Number) row[1]).intValue();
 
         ParkingLotAvgRating ar = avgRepo.findByParkingLotPId(pId)
                 .orElseGet(() -> {
