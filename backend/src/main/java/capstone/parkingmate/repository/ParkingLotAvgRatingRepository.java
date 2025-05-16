@@ -9,7 +9,8 @@ import java.util.Optional;
 import java.util.List;
 
 public interface ParkingLotAvgRatingRepository extends JpaRepository<ParkingLotAvgRating, Long> {
-    Optional<ParkingLotAvgRating> findByParkingLotPId(Long pId);
+    @Query("SELECT r FROM ParkingLotAvgRating r WHERE r.parkingLot.p_id = :pId")
+    Optional<ParkingLotAvgRating> findByParkingLotPId(@Param("pId") Long pId);
 
 
 }
