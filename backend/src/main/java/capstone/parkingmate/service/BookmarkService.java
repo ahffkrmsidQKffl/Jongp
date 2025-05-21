@@ -55,6 +55,13 @@ public class BookmarkService {
                     dto.setAddress(bookmark.getParkingLot().getAddress());
                     dto.setFee(bookmark.getParkingLot().getFee());
                     dto.setBookmarkId(bookmark.getBookmark_id());
+
+                    if(bookmark.getParkingLot().getAvgRating() == null) {
+                        dto.setAvg_rating(0.0);
+                    } else {
+                        dto.setAvg_rating(bookmark.getParkingLot().getAvgRating().getAvg_score());
+                    }
+
                     return dto;
                 })
                 .toList();
