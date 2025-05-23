@@ -1,91 +1,89 @@
 .login-container {
-  height: calc(var(--vh, 1vh) * 100); /* 전체 화면 기준 */
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #d75d50;
-  flex-direction: column;
-}
-
-.login-left {
-  display: none;
 }
 
 .login-form {
-  display: flex;
-  flex-direction: column;
   width: 100%;
-  max-width: 320px;
-  margin: auto;
+  max-width: 360px;
   background-color: #fff;
-  color: black;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  padding: 24px;
-  border-radius: 20px;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: left;
 }
 
-.login-form input,
-.login-form button {
+.login-logo {
+  display: block;
+  width: 100px;
+  margin: 0 auto 16px;
+}
+
+.login-title {
+  margin: 0 0 24px;
+  font-size: 24px;
+  color: #d75d50;
+  text-align: center;
+  border-bottom: 2px solid #d75d50;
+  padding-bottom: 8px;
+}
+
+.login-form h3 {
+  margin: 0 0 16px;
+  font-size: 20px;
+  color: #333;
+  text-align: left;
+}
+
+.login-form input {
+  width: 100%;
   padding: 12px;
   margin-bottom: 12px;
   font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
 }
 
-.login-form button {
-  background-color: #d95c50;
-  color: white;
+/* 체크박스 + 텍스트를 내용 길이만큼만 차지하게, 한 줄로 붙여서 배치 */
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 20px;
+  white-space: nowrap;
+}
+
+.checkbox-label input {
+  margin: 0;
+  accent-color: #d75d50;
+}
+
+.login-button {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  background-color: #d75d50;
+  color: #fff;
   border: none;
-  border-radius: 10px;
+  border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
 }
 
-.login-form input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  margin-right: 10px;
-  accent-color: #d95c50;
+.login-button:hover {
+  background-color: #c04b44;
 }
 
 .signup-link {
+  margin-top: 16px;
   text-align: center;
-  margin-top: 10px;
 }
 
 .signup-link a {
-  color: #d95c50;
+  color: #d75d50;
   font-weight: bold;
   text-decoration: none;
-}
-
-/* ✅ 반응형 구조: 768px 이상일 때 좌우 분할 */
-@media screen and (min-width: 768px) {
-  .login-container {
-    flex-direction: row;
-  }
-
-  .login-left {
-    flex: 1;
-    background-color: #d75d50; /* 컨테이너와 통일 */
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 40px;
-    height: 100%; /* 추가 */
-  }
-
-  .login-right {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding-top: 6vh; /* 헤더 높이만큼 보정 */
-  }
-
-  .login-left img {
-    width: 120px;
-    margin-bottom: 20px;
-  }
 }

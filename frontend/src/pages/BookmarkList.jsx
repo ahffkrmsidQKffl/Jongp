@@ -9,7 +9,7 @@ import "./BookmarkList.css";
 
 const BookmarkList = () => {
   const { user } = useContext(UserContext);
-  const [bookmarks, setBookmarks] = useState([]);        // 북마크 목록: {p_id, name, address, fee, avg_rating}[]
+  const [bookmarks, setBookmarks] = useState([]);        // 북마크 목록: [{ p_id, name, address, fee, avg_rating, bookmarkId }, …]
   const [searchResults, setSearchResults] = useState([]); // 검색 결과: parking-lots API 반환 형태
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
@@ -50,9 +50,9 @@ const BookmarkList = () => {
   };
 
   // 북마크 삭제
-  const handleDelete = async (p_id) => {
+  const handleDelete = async (bookmarkId) => {
     try {
-      await apiRequest(`/api/bookmarks/${p_id}`, "DELETE", null, user?.email);
+      await apiRequest(`/api/bookmarks/${bookmarkId}`, "DELETE", null, user?.email);
       toast.success("북마크가 삭제되었습니다.");
       await fetchBookmarks();
     } catch (err) {
@@ -81,7 +81,7 @@ const BookmarkList = () => {
   // 렌더링
   const renderCard = (lot, isSearch = false) => (
     <li
-      key={lot.p_id}
+      key={lot.bookmarkId ?? lot.p_id}
       className="bookmark-card"
       onClick={() => !isSearch && handleClickCard(lot)}
     >
@@ -101,7 +101,7 @@ const BookmarkList = () => {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              handleDelete(lot.p_id);
+              handleDelete(lot.bookmarkId);
             }}
             className="delete-btn"
           >
@@ -114,7 +114,7 @@ const BookmarkList = () => {
         <span>
           요금:{" "}
           {lot.fee != null
-            ? `${lot.fee.toLocaleString()}원`
+            ? `5분당 ${lot.fee.toLocaleString()}원`
             : "정보 없음"}
         </span>
         <span>

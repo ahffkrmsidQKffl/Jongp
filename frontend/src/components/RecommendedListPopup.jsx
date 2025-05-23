@@ -3,52 +3,45 @@ import { UserContext } from "../context/UserContext";
 import "./RecommendedListPopup.css";
 
 const getColorByScore = (score) => {
-  let red, green, blue = 0;
-  if (score <= 50) {
-    red = 255;
-    green = Math.round(score * 5.1);
+  const red    = { r: 206, g:   0, b:  24 };
+  const yellow = { r: 250, g: 206, b:   6 };
+  const green  = { r:  39, g: 130, b:  74 };
+  const s = Math.max(0, Math.min(score, 100));
+  const lerp = (start, end, t) => Math.round(start + (end - start) * t);
+
+  let r, g, b;
+  if (s <= 50) {
+    const t = s / 50;
+    r = lerp(red.r, yellow.r, t);
+    g = lerp(red.g, yellow.g, t);
+    b = lerp(red.b, yellow.b, t);
   } else {
-    red = Math.round((100 - score) * 5.1);
-    green = 255;
+    const t = (s - 50) / 50;
+    r = lerp(yellow.r, green.r, t);
+    g = lerp(yellow.g, green.g, t);
+    b = lerp(yellow.b, green.b, t);
   }
-  return `rgb(${red}, ${green}, ${blue})`;
+
+  return `rgb(${r}, ${g}, ${b})`;
 };
 
-const RecommendedListPopup = ({
+export default function RecommendedListPopup({
   lots,
   onSelect,
   onClose,
   title,
-  baseLocation,
   userAddress,
   isInitial,
-}) => {
+  selectedTime,
+}) {
   const { user } = useContext(UserContext);
 
-  const getDistance = (lat1, lng1, lat2, lng2) => {
-    const R = 6371e3;
-    const toRad = (deg) => (deg * Math.PI) / 180;
-    const dLat = toRad(lat2 - lat1);
-    const dLng = toRad(lng2 - lng1);
-    const x = dLng * Math.cos(toRad((lat1 + lat2) / 2));
-    const y = dLat;
-    const distance = Math.sqrt(x * x + y * y) * R;
-    return Math.round(distance);
-  };
-
   const sortedLots = [...lots]
-    .map((lot) => {
-      const score = lot.recommendationScore || 0;
-      const distance = baseLocation
-        ? getDistance(
-            baseLocation.lat,
-            baseLocation.lng,
-            lot.latitude,
-            lot.longitude
-          )
-        : null;
-      return { ...lot, score, distance };
-    })
+    .map((lot) => ({
+      ...lot,
+      score: lot.recommendationScore || 0,
+      distance: lot.distance != null ? lot.distance : null,
+    }))
     .sort((a, b) => b.score - a.score);
 
   const limitCount = title === "현재 위치 기반 추천" && isInitial ? 1 : 3;
@@ -58,14 +51,13 @@ const RecommendedListPopup = ({
     <div className="recommend-popup-overlay">
       <div className="recommend-popup-card">
         <h3 className="recommend-title">{title}</h3>
-        {userAddress && (
-          <p className="recommend-address">
-            현재 위치는 <strong>{userAddress}</strong> 입니다.
+        {userAddress && <p className="recommend-address">현재 위치는 {userAddress} 입니다.</p>}
+        {selectedTime && (
+          <p className="recommend-time">
+            <strong>추천 기준 시각</strong> {selectedTime}
           </p>
         )}
-        <button className="recommend-close-btn" onClick={onClose}>
-          ×
-        </button>
+        <button className="recommend-close-btn" onClick={onClose}>×</button>
         <ul className="recommend-list">
           {limitedLots.map((lot) => {
             const scoreColor = getColorByScore(lot.score);
@@ -75,20 +67,21 @@ const RecommendedListPopup = ({
                 className="recommend-card"
                 onClick={() => onSelect(lot)}
               >
-                <div className="recommend-card-header">
-                  <h4>{lot.name}</h4>
-                  <div
-                    className="recommend-score-badge large"
-                    style={{ backgroundColor: scoreColor }}
-                  >
-                    {lot.score}
-                  </div>
+                <div className="recommend-card-content">
+                  <h4 className="recommend-card-title">{lot.name}</h4>
+                    <p>{lot.address}</p>
+                    {lot.fee != null && (
+                      <p><strong>요금</strong> 5분당 {lot.fee.toLocaleString()}원</p>)}
+                    {lot.distance != null && (
+                      <p><strong>거리</strong> {lot.distance.toFixed(1)}km</p>)}
+                    {lot.total_spaces != null && lot.current_vehicles != null ? (
+                      <p><strong>주차현황</strong> 총 {lot.total_spaces.toLocaleString()}대 중 {lot.current_vehicles.toLocaleString()}대 사용 중</p>
+                    ) : (
+                      <p><strong>주차현황</strong> 정보 없음</p>)}
                 </div>
-                <p>{lot.address}</p>
-                {lot.fee != null && <p>요금: {lot.fee.toLocaleString()}원</p>}
-                {lot.distance != null && (
-                  <p>거리: {lot.distance.toLocaleString()}m</p>
-                )}
+                <div className="recommend-score-badge large" style={{ backgroundColor: scoreColor }}>
+                  {lot.score.toFixed(1)}
+                </div>
               </li>
             );
           })}
@@ -96,6 +89,4 @@ const RecommendedListPopup = ({
       </div>
     </div>
   );
-};
-
-export default RecommendedListPopup;
+}

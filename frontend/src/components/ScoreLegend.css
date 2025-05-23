@@ -11,10 +11,10 @@
     padding: 8px 10px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  }
-  
-  /* 점수 막대 */
-  .score-legend-vertical-bar {
+}
+
+/* 점수 막대 */
+.score-legend-vertical-bar {
     display: flex;
     flex-direction: column-reverse;
     height: 120px;
@@ -22,16 +22,16 @@
     border-radius: 6px;
     overflow: hidden;
     margin-left: 8px;
-  }
-  
-  /* 색상 단위 */
-  .score-legend-vertical-segment {
+}
+
+/* 색상 단위 */
+.score-legend-vertical-segment {
     flex: 1;
     width: 100%;
-  }
-  
-  /* 숫자 레이블 */
-  .score-legend-vertical-labels {
+}
+
+/* 숫자 레이블 */
+.score-legend-vertical-labels {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -39,5 +39,13 @@
     font-size: 10px;
     color: #333;
     text-align: right;
+}
+
+/* ──────────────────────────────────────────────────────────── */
+/* 모바일(768px 이하)에서는 완전히 숨김 */
+@media (max-width: 768px) {
+  .score-legend-vertical {
+    display: none;
   }
-  
+}
+/* ──────────────────────────────────────────────────────────── */

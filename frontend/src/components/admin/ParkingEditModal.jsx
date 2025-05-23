@@ -109,7 +109,7 @@ export default function ParkingEditModal({ mode = 'create', data = {}, onClose, 
             </div>
           </label>
           <label>
-            요금
+            요금 5분당
             <input name="fee" type="number" value={form.fee} onChange={handleChange} />
           </label>
           <label>

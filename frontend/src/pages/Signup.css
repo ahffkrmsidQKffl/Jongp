@@ -7,7 +7,7 @@
   height: calc(var(--vh, 1vh) * 100);
   width: 100vw;
 
-  background: linear-gradient(to bottom, rgb(83, 27, 27), #01172f);
+  background-color: #d75d50;
   color: white;
 }
 

@@ -12,6 +12,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLocationCrosshairs } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
 import { UserContext } from "../context/UserContext";
+import LoadingOverlay from "../components/LoadingOverlay";
 import "./Home.css";
 
 const Home = ({ triggerNearby, clearTriggerNearby }) => {
@@ -32,6 +33,8 @@ const Home = ({ triggerNearby, clearTriggerNearby }) => {
   const [currentAddress, setCurrentAddress] = useState("");
   const [locationAllowed, setLocationAllowed] = useState(true);
   const [isInitialNearby, setIsInitialNearby] = useState(false);
+  const [isLoadingRecommend, setIsLoadingRecommend] = useState(false);
+  const [selectedTime, setSelectedTime] = useState(null);
 
   const fetchCurrentAddress = ({ lat, lng }) => {
     const geocoder = new window.kakao.maps.services.Geocoder();
@@ -41,6 +44,47 @@ const Home = ({ triggerNearby, clearTriggerNearby }) => {
         setCurrentAddress(address);
       }
     });
+  };
+
+  // 추천 리스트 병합 helper
+  const fetchMergedLots = async (basicLots) => {
+    const merged = await Promise.all(
+      basicLots.map(async (lot) => {
+        try {
+          const res = await apiRequest(`/api/parking-lots/${lot.p_id}`);
+          return {
+            ...lot,
+            total_spaces: res.data.total_spaces,
+            current_vehicles: res.data.current_vehicles,
+          };
+        } catch (err) {
+          console.error("주차장 상세 조회 실패", lot.p_id, err);
+          return lot;
+        }
+      })
+    );
+    return merged;
+  };
+
+  // 추천 리스트에서 하나 클릭했을 때 상세조회 + 팝업 열기
+  const handleRecommendSelect = async (lot) => {
+    try {
+      const res = await apiRequest(`/api/parking-lots/${lot.p_id}`);
+      const detail = res.data;
+      // 지도 센터링
+      const moveLatLng = new window.kakao.maps.LatLng(detail.latitude, detail.longitude);
+      mapInstance.setCenter(moveLatLng);
+      // 팝업 열기 (실시간 현황까지 담긴 detail)
+      setSelectedParking({
+        ...detail,
+        avg_rating: detail.avg_score ?? detail.avg_rating,
+      });
+      // 추천 리스트 닫기
+      setShowRecommendedList(false);
+    } catch (err) {
+      console.error("추천 주차장 상세 조회 실패", err);
+      toast.error("추천 주차장 상세 정보를 불러오지 못했습니다.");
+    }
   };
 
   useEffect(() => {
@@ -73,7 +117,6 @@ const Home = ({ triggerNearby, clearTriggerNearby }) => {
   useEffect(() => {
     if (!userPosition || isKakaoMapLoaded) return;
     const scriptId = "kakao-map-sdk";
-
     const loadMap = () => {
       const options = {
         center: new window.kakao.maps.LatLng(userPosition.lat, userPosition.lng),
@@ -114,66 +157,47 @@ const Home = ({ triggerNearby, clearTriggerNearby }) => {
     }
   }, [triggerNearby, userPosition, mapInstance, locationAllowed]);
 
-  // ✅ 추가되는 외곽선 그리기용 useEffect
+  // 서울시 외곽선 그리기
   useEffect(() => {
     if (!mapInstance) return;
-  
     fetch("/seoul-outline.geojson")
       .then((res) => {
-        if (!res.ok) throw new Error("GeoJSON 파일 로드 실패 (status: " + res.status + ")");
+        if (!res.ok) throw new Error("GeoJSON 파일 로드 실패");
         return res.json();
       })
       .then((geojson) => {
         const geometry = geojson?.geometries?.[0];
-        if (!geometry || !geometry.coordinates) {
-          console.error("❌ GeoJSON geometry 구조가 이상합니다:", geometry);
-          return;
-        }
-  
-        let coordsRaw = null;
+        let coordsRaw = [];
         if (geometry.type === "Polygon") {
-          coordsRaw = geometry.coordinates?.[0];
+          coordsRaw = geometry.coordinates[0];
         } else if (geometry.type === "MultiPolygon") {
-          coordsRaw = geometry.coordinates?.[0]?.[0];
+          coordsRaw = geometry.coordinates[0][0];
         }
-  
-        if (!Array.isArray(coordsRaw)) {
-          console.error("❌ coordsRaw가 배열이 아닙니다:", coordsRaw);
-          return;
-        }
-  
-        const coords = coordsRaw.map(
-          ([lng, lat]) => new window.kakao.maps.LatLng(lat, lng)
-        );
-  
-        const polygon = new window.kakao.maps.Polygon({
+        const coords = coordsRaw.map(([lng, lat]) => new window.kakao.maps.LatLng(lat, lng));
+        new window.kakao.maps.Polygon({
           path: coords,
           strokeWeight: 5,
           strokeColor: "#0047AB",
           strokeOpacity: 0.9,
           fillColor: "#A2D5F2",
-          fillOpacity: 0.0
-        });
-  
-        polygon.setMap(mapInstance);
+          fillOpacity: 0,
+        }).setMap(mapInstance);
       })
       .catch((err) => {
-        console.error("서울 외곽선 GeoJSON 로드 실패:", err);
+        console.error("서울 외곽선 로드 실패", err);
       });
   }, [mapInstance]);
 
+  // URL state 로직 (다른 페이지에서 targetParkingId 로 이동)
   useEffect(() => {
     const targetId = location.state?.targetParkingId;
     if (targetId != null && mapInstance) {
       apiRequest(`/api/parking-lots/${targetId}`)
         .then((res) => {
           const detail = res.data;
-          // 1) 지도 센터링
           const moveLatLng = new window.kakao.maps.LatLng(detail.latitude, detail.longitude);
           mapInstance.setCenter(moveLatLng);
-          // 2) 팝업 열기
           setSelectedParking(detail);
-          // 3) 한번만 실행되도록 state 초기화
           navigate(location.pathname, { replace: true, state: {} });
         })
         .catch((err) => {
@@ -182,40 +206,46 @@ const Home = ({ triggerNearby, clearTriggerNearby }) => {
         });
     }
   }, [location.state, mapInstance, navigate, location.pathname]);
-  
-  
 
   const handleNearbyRecommend = async (isAuto = false) => {
-    if (!userPosition || !mapInstance) return;
-    try {
-      // 현재 시간 기준 weekday, hour 계산
-      const now = new Date();
-      const weekday = now.getDay();    // 0(일)~6(토)
-      const hour    = now.getHours();  // 0~23
+  if (!userPosition || !mapInstance) return;
 
-      const result = await apiRequest(
-        "/api/parking-lots/recommendations/nearby",
-        "POST",
-        {
-          latitude:  userPosition.lat,
-          longitude: userPosition.lng,
-          weekday,
-          hour
-        },
-        user.email
-      );
-      mapInstance.setCenter(new window.kakao.maps.LatLng(userPosition.lat, userPosition.lng));
-      mapInstance.setLevel(3);
-      setRecommendedLots(result.data);
-      setRecommendTitle("현재 위치 기반 추천");
-      setBaseLocation(userPosition);
-      fetchCurrentAddress(userPosition);
-      setShowRecommendedList(true);
-      if (!isAuto) sessionStorage.setItem("nearbyRun", "true");
-    } catch (err) {
-      console.error("현재 위치 추천 실패", err);
-    }
-  };
+  // 1) 지금 시각 HH:MM 계산해서 상태에 저장
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, "0");
+  const mm = String(now.getMinutes()).padStart(2, "0");
+  setSelectedTime(`${hh}:${mm}`);
+
+  setIsLoadingRecommend(true);
+  try {
+    // 2) 요일·시간 뽑을 때도 같은 now 사용
+    const weekday = now.getDay();
+    const hour = now.getHours();
+    const result = await apiRequest(
+      "/api/parking-lots/recommendations/nearby",
+      "POST",
+      { latitude: userPosition.lat, longitude: userPosition.lng, weekday, hour },
+      user.email
+    );
+
+    mapInstance.setCenter(new window.kakao.maps.LatLng(userPosition.lat, userPosition.lng));
+    mapInstance.setLevel(3);
+
+    // 기본 추천 리스트 → 상세 현황 병합
+    const mergedLots = await fetchMergedLots(result.data);
+
+    setRecommendedLots(mergedLots);
+    setRecommendTitle("현재 위치 기반 추천");
+    setBaseLocation(userPosition);
+    fetchCurrentAddress(userPosition);
+    setShowRecommendedList(true);
+    if (!isAuto) sessionStorage.setItem("nearbyRun", "true");
+  } catch (err) {
+    console.error("현재 위치 추천 실패", err);
+  } finally {
+    setIsLoadingRecommend(false);
+  }
+};
 
   const handleSelectAddress = ({ lat, lng, place }) => {
     if (!mapInstance) return;
@@ -225,111 +255,100 @@ const Home = ({ triggerNearby, clearTriggerNearby }) => {
     setConfirmTarget({ lat, lng, place });
   };
 
-  const handleConfirmAddress = async () => {
+  const handleConfirmAddress = async (selectedTime) => {
+    setSelectedTime(selectedTime);
+    setIsLoadingRecommend(true);
     try {
       const { lat, lng, place } = confirmTarget;
-      // 현재 시간 기준 weekday, hour 계산
       const now = new Date();
-      const weekday = now.getDay();    // 0(일)~6(토)
-      const hour    = now.getHours();  // 0~23
-
+      const weekday = now.getDay();
+      const hour = typeof selectedTime === "string"
+        ? Number(selectedTime.split(":")[0])
+        : now.getHours();
       const result = await apiRequest(
         "/api/parking-lots/recommendations/destination",
         "POST",
-        {
-          latitude:  lat,
-          longitude: lng,
-          weekday,
-          hour
-        },
+        { latitude: lat, longitude: lng, weekday, hour },
         user.email
       );
-      setRecommendedLots(result.data);
+
+      // 병합
+      const basicLots = result.data;
+      const mergedLots = await fetchMergedLots(basicLots);
+
+      setRecommendedLots(mergedLots);
       setRecommendTitle(`"${place.place_name}" 근처 추천`);
-      setShowRecommendedList(true);
       setBaseLocation({ lat, lng });
+      setShowRecommendedList(true);
       setConfirmTarget(null);
     } catch (err) {
       console.error("추천 실패", err);
+    } finally {
+      setIsLoadingRecommend(false);
     }
   };
 
   if (!locationAllowed) {
     return (
       <div className="location-denied-message">
-        <div className="location-icon">
-          <FontAwesomeIcon icon={faLocationCrosshairs} />
-        </div>
+        <FontAwesomeIcon icon={faLocationCrosshairs} size="3x" />
         <h2>위치 권한이 필요해요</h2>
-        <p>
-          스마트 파킹 서비스를 이용하려면<br />
-          위치 정보 제공에 동의해주세요.
-        </p>
+        <p>서비스 이용을 위해 위치 정보 제공에 동의해주세요.</p>
         <button
           onClick={() => {
-            sessionStorage.removeItem("nearbyRun"); // 초기 추천 초기화
-            navigate("/login"); // 로그인 페이지로 이동
+            sessionStorage.removeItem("nearbyRun");
+            navigate("/login");
           }}
         >
-          다시 시도하기
+          다시 시도
         </button>
       </div>
     );
   }
 
   return (
-    <div className="home-page">
-      <div id="map" ref={mapRef} style={{ width: "100%", height: "100vh" }} />
-
-      {mapInstance && userPosition && <LocationMarker map={mapInstance} position={userPosition} />}
-      {mapInstance && <ParkingLocationMarker map={mapInstance} setSelectedParking={setSelectedParking} />}
-      {selectedParking && (
-        <ParkingPopup parking={selectedParking} onClose={() => setSelectedParking(null)} />
-      )}
-
-      <AddressSearchBar onSelect={handleSelectAddress} />
-
-      {confirmTarget && (
-        <AddressConfirmModal
-          place={confirmTarget.place}
-          onConfirm={handleConfirmAddress}
-          onCancel={() => setConfirmTarget(null)}
-        />
-      )}
-
-      {showRecommendedList && (
-        <>
-        <RecommendedListPopup
-          title={recommendTitle}
-          lots={recommendedLots}
-          baseLocation={baseLocation}
-          userAddress={recommendTitle === "현재 위치 기반 추천" ? currentAddress : null}
-          isInitial={isInitialNearby}
-          onSelect={(lot) => {
-            const moveLatLng = new window.kakao.maps.LatLng(lot.latitude, lot.longitude);
-            mapInstance.setCenter(moveLatLng);
-            setSelectedParking(lot);
-            setShowRecommendedList(false);
+    <>
+      {isLoadingRecommend && <LoadingOverlay />}
+      <div className="home-page">
+        <div id="map" ref={mapRef} style={{ width: "100%", height: "100vh" }} />
+        {mapInstance && userPosition && <LocationMarker map={mapInstance} position={userPosition} />}
+        {mapInstance && <ParkingLocationMarker map={mapInstance} setSelectedParking={setSelectedParking} />}
+        {selectedParking && <ParkingPopup parking={selectedParking} onClose={() => setSelectedParking(null)} />}
+        <AddressSearchBar onSelect={handleSelectAddress} />
+        {confirmTarget && (
+          <AddressConfirmModal
+            place={confirmTarget.place}
+            onConfirm={handleConfirmAddress}
+            onCancel={() => setConfirmTarget(null)}
+          />
+        )}
+        {showRecommendedList && (
+          <>
+            <RecommendedListPopup
+              title={recommendTitle}
+              lots={recommendedLots}
+              baseLocation={baseLocation}
+              userAddress={recommendTitle === "현재 위치 기반 추천" ? currentAddress : null}
+              isInitial={isInitialNearby}
+              onSelect={handleRecommendSelect}
+              onClose={() => setShowRecommendedList(false)}
+              selectedTime={selectedTime}
+            />
+            <ScoreLegend />
+          </>
+        )}
+        <button
+          className="nearby-fab"
+          onClick={() => {
+            setIsInitialNearby(false);
+            handleNearbyRecommend(false);
           }}
-          onClose={() => setShowRecommendedList(false)}
-        />
-        <ScoreLegend />
-        </>
-      )}
-
-
-
-      <button
-        className="nearby-fab"
-        onClick={() => {
-          setIsInitialNearby(false);
-          handleNearbyRecommend(false);
-        }}
-        title="주변 추천"
-      >
-        <FontAwesomeIcon icon={faLocationCrosshairs} />
-      </button>
-    </div>
+          title="주변 추천"
+        >
+          <FontAwesomeIcon icon={faLocationCrosshairs} />
+        </button>
+      </div>
+    </>
   );
 };
 
