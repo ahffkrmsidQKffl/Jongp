@@ -18,7 +18,10 @@ df.dropna(subset=["시간대"], inplace=True)
 df["시간"] = df["시간대"].dt.hour
 df["요일"] = df["시간대"].dt.dayofweek
 df["주차장명"] = df["주차장명"].str.strip().str.lower()
-df["혼잡도(%)"] = ((df["입차대수"] - df["출차대수"]) / df["주차면수"] * 100).clip(0,100)
+# df["혼잡도(%)"] = ((df["입차대수"] - df["출차대수"]) / df["주차면수"] * 100).clip(0,100)
+# 시간 순 정렬 및 누적 합
+df['누적입차'] = df.groupby('주차장명')['입차대수'].cumsum()
+df['누적출차'] = df.groupby('주차장명')['출차대수'].cumsum()
 
 # lag features 생성
 lags = [(7*24, "지난주_혼잡도"), (14*24, "지지난주_혼잡도"), (21*24, "지지지난주_혼잡도")]
