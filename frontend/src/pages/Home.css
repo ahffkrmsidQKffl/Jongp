@@ -65,7 +65,6 @@
     align-items: center;
     z-index: 999; /* 네비게이션 바가 다른 모든 요소 위에 표시되게 설정 */
   }
-  
   /* 위치 오류 메시지 띄우기 */
 .location-message {
   position: fixed;

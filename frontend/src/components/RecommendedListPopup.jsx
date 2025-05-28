@@ -71,7 +71,8 @@ export default function RecommendedListPopup({
                   <h4 className="recommend-card-title">{lot.name}</h4>
                     <p>{lot.address}</p>
                     {lot.fee != null && (
-                      <p><strong>요금</strong> 5분당 {lot.fee.toLocaleString()}원</p>)}
+                      <p><strong>요금</strong> 기본요금 5분 {lot.fee.toLocaleString()}원<br/>
+                      이후 5분당 {lot.fee.toLocaleString()}원</p>)}
                     {lot.distance != null && (
                       <p><strong>거리</strong> {lot.distance.toFixed(1)}km</p>)}
                     {lot.total_spaces != null && lot.current_vehicles != null ? (

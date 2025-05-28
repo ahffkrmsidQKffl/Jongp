@@ -114,11 +114,13 @@ const BookmarkList = () => {
         <span>
           요금:{" "}
           {lot.fee != null
-            ? `5분당 ${lot.fee.toLocaleString()}원`
+            ? `기본요금 5분 ${lot.fee.toLocaleString()}원, 이후 5분당 ${lot.fee.toLocaleString()}원`
             : "정보 없음"}
         </span>
         <span>
-          평점: {lot.avg_rating != null ? lot.avg_rating.toFixed(1) : "0.0"}
+          평점: {(lot.avg_rating ?? lot.rating) != null
+            ? (lot.avg_rating ?? lot.rating).toFixed(1)
+            : "0.0"}
         </span>
       </div>
     </li>

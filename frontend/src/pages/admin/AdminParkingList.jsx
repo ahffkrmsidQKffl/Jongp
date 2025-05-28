@@ -96,7 +96,7 @@ export default function AdminParkingList() {
               <td>{p.p_id}</td>
               <td>{p.name}</td>
               <td>{p.address}</td>
-              <td>5분당 {p.fee.toLocaleString()}원</td>
+              <td>기본요금 5분 {p.fee.toLocaleString()}원, 이후 5분당 {p.fee.toLocaleString()}원</td>
               <td>{p.avg_rating}</td>
             </tr>
           ))}
