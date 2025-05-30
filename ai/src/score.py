@@ -121,7 +121,7 @@ def recommend(candidates, duration=120, lat0=None, lon0=None):
         is_realtime = "congestion" in c and name_normalized in realtime_names
 
         if is_realtime:
-            cong = c["congestion"]
+            cong = c["congestion"] * 100
             print(f"[DEBUG] 혼잡도 예측 방식: 실시간 입력값 사용 → {cong:.2f}", file=sys.stderr)
             row = df_static_b[df_static_b["주차장명"] == name_normalized]
             print(f"[DEBUG] 사용된 정적 파일: df_static_b", file=sys.stderr)
